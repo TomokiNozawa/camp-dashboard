@@ -1188,6 +1188,7 @@ function listenTasks() {
 function listenUsers() {
   db.ref('users').on('value', snap => {
     users = snap.val() || {};
+    renderBoard();
     renderMembers();
     updateAssigneeOptions();
     updateFilterChips();
