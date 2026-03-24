@@ -209,7 +209,412 @@ html, body {
 }
 .btn-icon:hover { background: var(--bg-card); color: var(--text-primary); }
 
-/* Stats Bar */
+/* ============ TAB BAR ============ */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+
+.tab-item {
+  position: relative;
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+  border: none;
+  background: none;
+  font-family: inherit;
+  user-select: none;
+}
+.tab-item:hover { color: var(--text-primary); }
+.tab-item.active {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+.tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 8px; right: 8px;
+  height: 2px;
+  background: var(--accent-blue);
+  border-radius: 2px 2px 0 0;
+}
+
+/* ============ TAB PANES ============ */
+.tab-pane { display: none; flex: 1; min-height: 0; overflow: hidden; flex-direction: column; }
+.tab-pane.active { display: flex; }
+
+/* ============ OVERVIEW TAB ============ */
+.overview-pane { overflow-y: auto; padding: 20px; }
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.summary-card-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 6px;
+}
+.summary-card-value {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.summary-card-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.activity-feed-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+}
+
+.activity-feed { display: flex; flex-direction: column; gap: 8px; }
+
+.activity-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  align-items: flex-start;
+}
+.activity-icon {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  background: var(--bg-primary);
+}
+.activity-body { flex: 1; min-width: 0; }
+.activity-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+.activity-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.activity-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 20px;
+  font-size: 13px;
+}
+
+/* ============ PLANNING TOPICS TAB ============ */
+.topics-pane { overflow-y: auto; }
+
+.topics-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  align-items: center;
+}
+.topics-toolbar-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.topics-list {
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topic-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 14px 14px 17px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.topic-card:hover { background: var(--bg-card-hover); border-color: var(--border-light); }
+
+.topic-priority-bar {
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.topic-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.topic-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;
+  word-break: break-word;
+}
+.topic-context {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.topic-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.category-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.category-badge[data-cat="対象者定義"] { background: rgba(90,173,255,0.15); color: var(--accent-blue); }
+.category-badge[data-cat="ゴール設計"] { background: rgba(66,199,96,0.15); color: var(--accent-green); }
+.category-badge[data-cat="差別化"] { background: rgba(184,140,255,0.15); color: var(--accent-purple); }
+.category-badge[data-cat="業務適用"] { background: rgba(240,136,62,0.15); color: var(--accent-orange); }
+.category-badge[data-cat="形式・構成"] { background: rgba(232,184,64,0.15); color: var(--accent-yellow); }
+.category-badge[data-cat="カリキュラム"] { background: rgba(248,81,73,0.15); color: var(--accent-red); }
+.category-badge[data-cat="運営"] { background: rgba(139,149,165,0.15); color: var(--text-secondary); }
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.status-badge.s-未着手 { background: rgba(139,149,165,0.2); color: var(--status-todo); }
+.status-badge.s-議論中 { background: rgba(232,184,64,0.2); color: var(--status-doing); }
+.status-badge.s-結論待ち { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.status-badge.s-決定済み { background: rgba(66,199,96,0.2); color: var(--status-done); }
+.status-badge.s-取り下げ { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+/* Decision status badges */
+.status-badge.s-有効 { background: rgba(66,199,96,0.2); color: var(--status-done); }
+.status-badge.s-見直し中 { background: rgba(232,184,64,0.2); color: var(--status-doing); }
+.status-badge.s-撤回 { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+.topic-assignee {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text-muted);
+}
+.topic-assignee img {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+
+.topics-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 20px;
+  font-size: 14px;
+}
+.topics-empty-icon { font-size: 40px; opacity: 0.5; margin-bottom: 8px; }
+
+/* ============ RECORDS TAB ============ */
+.records-pane { overflow-y: auto; }
+
+.records-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.records-list {
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.decision-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.decision-card:hover { background: var(--bg-card-hover); }
+
+.decision-number {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-blue);
+  letter-spacing: 0.3px;
+}
+.decision-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.decision-content {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.decision-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.decision-author {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text-muted);
+}
+.decision-author img {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+}
+.decision-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.decision-topic-link {
+  font-size: 11px;
+  color: var(--accent-purple);
+  cursor: pointer;
+}
+.decision-topic-link:hover { text-decoration: underline; }
+
+.records-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 60px 20px;
+  font-size: 14px;
+}
+
+/* ============ TIMELINE PLACEHOLDER ============ */
+.timeline-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 15px;
+}
+.timeline-placeholder-icon { font-size: 48px; opacity: 0.4; }
+
+/* ============ COMMENT THREAD ============ */
+.comment-thread {
+  margin-top: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.comment-thread-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 240px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+.comment-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.comment-avatar {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.comment-body { flex: 1; min-width: 0; }
+.comment-author {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.comment-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  word-break: break-word;
+}
+.comment-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.comment-input-row {
+  display: flex;
+  gap: 8px;
+}
+.comment-input-row .form-input { flex: 1; padding: 8px 12px; font-size: 13px; }
+.comment-input-row .btn { padding: 8px 14px; font-size: 13px; }
+
+/* ============ Stats Bar ============ */
 .stats-bar {
   display: flex;
   gap: 2px;
@@ -745,6 +1150,11 @@ html, body {
   .header-title { font-size: 15px; }
   .header-user .header-user-name { display: none; }
 
+  .tab-bar { padding: 0 12px; }
+  .tab-item { padding: 10px 14px; font-size: 12px; }
+
+  .summary-cards { grid-template-columns: repeat(2, 1fr); }
+
   .stats-bar { padding: 8px 16px; }
   .filter-bar { padding: 8px 16px; }
 
@@ -779,6 +1189,9 @@ html, body {
   }
 
   .members-panel { width: 100%; }
+
+  .topics-list, .records-list { padding: 12px 16px; }
+  .overview-pane { padding: 16px; }
 }
 
 /* ============ LOADING ============ */
@@ -841,96 +1254,184 @@ html, body {
     </div>
   </header>
 
-  <!-- Stats Bar -->
-  <div class="stats-bar">
-    <div class="stat-item active" data-filter="all" onclick="filterByStatus('all', this)">
-      <span class="stat-count" id="statAll">0</span> 全タスク
+  <!-- Tab Bar -->
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-item active" data-tab="overview" onclick="switchTab('overview', this)">概要</button>
+    <button class="tab-item" data-tab="topics" onclick="switchTab('topics', this)">検討事項</button>
+    <button class="tab-item" data-tab="tasks" onclick="switchTab('tasks', this)">タスク</button>
+    <button class="tab-item" data-tab="timeline" onclick="switchTab('timeline', this)">タイムライン</button>
+    <button class="tab-item" data-tab="records" onclick="switchTab('records', this)">記録</button>
+  </div>
+
+  <!-- ===== OVERVIEW TAB ===== -->
+  <div class="tab-pane active overview-pane" id="paneOverview">
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-card-label">現在のフェーズ</div>
+        <div class="summary-card-value" style="font-size:15px;" id="overviewPhase">Phase 0</div>
+        <div class="summary-card-sub">企画立案</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">未決論点</div>
+        <div class="summary-card-value" id="overviewOpenTopics">0</div>
+        <div class="summary-card-sub">件</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">未完了タスク</div>
+        <div class="summary-card-value" id="overviewOpenTasks">0</div>
+        <div class="summary-card-sub">件</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-label">直近の決定</div>
+        <div class="summary-card-value" id="overviewRecentDecisions">0</div>
+        <div class="summary-card-sub">件（7日間）</div>
+      </div>
     </div>
-    <div class="stat-item" data-filter="todo" onclick="filterByStatus('todo', this)">
-      <span class="stat-dot" style="background:var(--status-todo)"></span>
-      <span class="stat-count" id="statTodo">0</span> 未着手
-    </div>
-    <div class="stat-item" data-filter="doing" onclick="filterByStatus('doing', this)">
-      <span class="stat-dot" style="background:var(--status-doing)"></span>
-      <span class="stat-count" id="statDoing">0</span> 進行中
-    </div>
-    <div class="stat-item" data-filter="done" onclick="filterByStatus('done', this)">
-      <span class="stat-dot" style="background:var(--status-done)"></span>
-      <span class="stat-count" id="statDone">0</span> 完了
+    <div class="activity-feed-title">最近のアクティビティ</div>
+    <div class="activity-feed" id="activityFeed">
+      <div class="activity-empty">まだアクティビティはありません</div>
     </div>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="filter-bar" id="filterBar">
-    <button class="filter-chip active" data-assignee="all" onclick="filterByAssignee('all', this)">全員</button>
-    <!-- Dynamically populated with member names -->
+  <!-- ===== PLANNING TOPICS TAB ===== -->
+  <div class="tab-pane topics-pane" id="paneTopics">
+    <div class="topics-toolbar">
+      <span class="topics-toolbar-label">カテゴリ:</span>
+      <button class="filter-chip active" data-topic-cat="全て" onclick="filterTopicCategory('全て', this)">全て</button>
+      <button class="filter-chip" data-topic-cat="対象者定義" onclick="filterTopicCategory('対象者定義', this)">対象者定義</button>
+      <button class="filter-chip" data-topic-cat="ゴール設計" onclick="filterTopicCategory('ゴール設計', this)">ゴール設計</button>
+      <button class="filter-chip" data-topic-cat="差別化" onclick="filterTopicCategory('差別化', this)">差別化</button>
+      <button class="filter-chip" data-topic-cat="業務適用" onclick="filterTopicCategory('業務適用', this)">業務適用</button>
+      <button class="filter-chip" data-topic-cat="形式・構成" onclick="filterTopicCategory('形式・構成', this)">形式・構成</button>
+      <button class="filter-chip" data-topic-cat="カリキュラム" onclick="filterTopicCategory('カリキュラム', this)">カリキュラム</button>
+      <button class="filter-chip" data-topic-cat="運営" onclick="filterTopicCategory('運営', this)">運営</button>
+    </div>
+    <div class="topics-toolbar">
+      <span class="topics-toolbar-label">ステータス:</span>
+      <button class="filter-chip active" data-topic-status="全て" onclick="filterTopicStatus('全て', this)">全て</button>
+      <button class="filter-chip" data-topic-status="未着手" onclick="filterTopicStatus('未着手', this)">未着手</button>
+      <button class="filter-chip" data-topic-status="議論中" onclick="filterTopicStatus('議論中', this)">議論中</button>
+      <button class="filter-chip" data-topic-status="結論待ち" onclick="filterTopicStatus('結論待ち', this)">結論待ち</button>
+      <button class="filter-chip" data-topic-status="決定済み" onclick="filterTopicStatus('決定済み', this)">決定済み</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openTopicCreateModal()">+ 検討事項を追加</button>
+    </div>
+    <div class="topics-list" id="topicsList">
+      <div class="topics-empty"><div class="topics-empty-icon">💬</div>検討事項はまだありません</div>
+    </div>
   </div>
 
-  <!-- Priority Filter & Sort Bar -->
-  <div class="filter-bar">
-    <span style="font-size:11px;color:var(--text-muted);margin-right:4px">優先度:</span>
-    <button class="filter-chip active" data-priority="all" onclick="filterByPriority('all', this)">全て</button>
-    <button class="filter-chip" data-priority="high" onclick="filterByPriority('high', this)">高</button>
-    <button class="filter-chip" data-priority="medium" onclick="filterByPriority('medium', this)">中</button>
-    <button class="filter-chip" data-priority="low" onclick="filterByPriority('low', this)">低</button>
-    <span style="font-size:11px;color:var(--text-muted);margin-left:12px;margin-right:4px">並び順:</span>
-    <button class="filter-chip active" data-sort="created" onclick="changeSort('created', this)">作成順</button>
-    <button class="filter-chip" data-sort="due" onclick="changeSort('due', this)">期日順</button>
-    <button class="filter-chip" data-sort="priority" onclick="changeSort('priority', this)">優先度順</button>
+  <!-- ===== TASKS TAB ===== -->
+  <div class="tab-pane" id="paneTasks" style="flex-direction:column;">
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+      <div class="stat-item active" data-filter="all" onclick="filterByStatus('all', this)">
+        <span class="stat-count" id="statAll">0</span> 全タスク
+      </div>
+      <div class="stat-item" data-filter="todo" onclick="filterByStatus('todo', this)">
+        <span class="stat-dot" style="background:var(--status-todo)"></span>
+        <span class="stat-count" id="statTodo">0</span> 未着手
+      </div>
+      <div class="stat-item" data-filter="doing" onclick="filterByStatus('doing', this)">
+        <span class="stat-dot" style="background:var(--status-doing)"></span>
+        <span class="stat-count" id="statDoing">0</span> 進行中
+      </div>
+      <div class="stat-item" data-filter="done" onclick="filterByStatus('done', this)">
+        <span class="stat-dot" style="background:var(--status-done)"></span>
+        <span class="stat-count" id="statDone">0</span> 完了
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-chip active" data-assignee="all" onclick="filterByAssignee('all', this)">全員</button>
+    </div>
+
+    <!-- Priority Filter & Sort Bar -->
+    <div class="filter-bar">
+      <span style="font-size:11px;color:var(--text-muted);margin-right:4px">優先度:</span>
+      <button class="filter-chip active" data-priority="all" onclick="filterByPriority('all', this)">全て</button>
+      <button class="filter-chip" data-priority="high" onclick="filterByPriority('high', this)">高</button>
+      <button class="filter-chip" data-priority="medium" onclick="filterByPriority('medium', this)">中</button>
+      <button class="filter-chip" data-priority="low" onclick="filterByPriority('low', this)">低</button>
+      <span style="font-size:11px;color:var(--text-muted);margin-left:12px;margin-right:4px">並び順:</span>
+      <button class="filter-chip active" data-sort="created" onclick="changeSort('created', this)">作成順</button>
+      <button class="filter-chip" data-sort="due" onclick="changeSort('due', this)">期日順</button>
+      <button class="filter-chip" data-sort="priority" onclick="changeSort('priority', this)">優先度順</button>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="kanban-container">
+      <div class="kanban-board" id="kanbanBoard">
+        <!-- Todo Column -->
+        <div class="kanban-column" data-status="todo" id="colTodo">
+          <div class="column-header" onclick="toggleColumn(this)">
+            <div class="column-header-left">
+              <span class="column-dot" style="background:var(--status-todo)"></span>
+              <span class="column-title">未着手</span>
+              <span class="column-count" id="countTodo">0</span>
+            </div>
+            <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('todo')">+</button>
+          </div>
+          <div class="column-body" id="bodyTodo"
+               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+          </div>
+        </div>
+
+        <!-- Doing Column -->
+        <div class="kanban-column" data-status="doing" id="colDoing">
+          <div class="column-header" onclick="toggleColumn(this)">
+            <div class="column-header-left">
+              <span class="column-dot" style="background:var(--status-doing)"></span>
+              <span class="column-title">進行中</span>
+              <span class="column-count" id="countDoing">0</span>
+            </div>
+            <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('doing')">+</button>
+          </div>
+          <div class="column-body" id="bodyDoing"
+               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'doing')">
+          </div>
+        </div>
+
+        <!-- Done Column -->
+        <div class="kanban-column" data-status="done" id="colDone">
+          <div class="column-header" onclick="toggleColumn(this)">
+            <div class="column-header-left">
+              <span class="column-dot" style="background:var(--status-done)"></span>
+              <span class="column-title">完了</span>
+              <span class="column-count" id="countDone">0</span>
+            </div>
+            <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('done')">+</button>
+          </div>
+          <div class="column-body" id="bodyDone"
+               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Kanban Board -->
-  <div class="kanban-container">
-    <div class="kanban-board" id="kanbanBoard">
-      <!-- Todo Column -->
-      <div class="kanban-column" data-status="todo" id="colTodo">
-        <div class="column-header" onclick="toggleColumn(this)">
-          <div class="column-header-left">
-            <span class="column-dot" style="background:var(--status-todo)"></span>
-            <span class="column-title">未着手</span>
-            <span class="column-count" id="countTodo">0</span>
-          </div>
-          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('todo')">+</button>
-        </div>
-        <div class="column-body" id="bodyTodo"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
-        </div>
-      </div>
+  <!-- ===== TIMELINE TAB ===== -->
+  <div class="tab-pane" id="paneTimeline">
+    <div class="timeline-placeholder">
+      <div class="timeline-placeholder-icon">📅</div>
+      <div>Phase 2 で実装予定</div>
+    </div>
+  </div>
 
-      <!-- Doing Column -->
-      <div class="kanban-column" data-status="doing" id="colDoing">
-        <div class="column-header" onclick="toggleColumn(this)">
-          <div class="column-header-left">
-            <span class="column-dot" style="background:var(--status-doing)"></span>
-            <span class="column-title">進行中</span>
-            <span class="column-count" id="countDoing">0</span>
-          </div>
-          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('doing')">+</button>
-        </div>
-        <div class="column-body" id="bodyDoing"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'doing')">
-        </div>
-      </div>
-
-      <!-- Done Column -->
-      <div class="kanban-column" data-status="done" id="colDone">
-        <div class="column-header" onclick="toggleColumn(this)">
-          <div class="column-header-left">
-            <span class="column-dot" style="background:var(--status-done)"></span>
-            <span class="column-title">完了</span>
-            <span class="column-count" id="countDone">0</span>
-          </div>
-          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('done')">+</button>
-        </div>
-        <div class="column-body" id="bodyDone"
-             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
-        </div>
-      </div>
+  <!-- ===== RECORDS TAB ===== -->
+  <div class="tab-pane records-pane" id="paneRecords">
+    <div class="records-toolbar">
+      <span style="font-size:14px;font-weight:600;">決定事項</span>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openDecisionCreateModal()">+ 決定を記録</button>
+    </div>
+    <div class="records-list" id="decisionsList">
+      <div class="records-empty">決定事項はまだありません</div>
     </div>
   </div>
 
   <!-- FAB (mobile) -->
-  <button class="fab" onclick="openCreateModal('todo')">+</button>
+  <button class="fab" id="mainFab" onclick="handleFabClick()">+</button>
 </div>
 
 <!-- ===== TASK CREATE/EDIT MODAL ===== -->
@@ -1004,6 +1505,154 @@ html, body {
   </div>
 </div>
 
+<!-- ===== TOPIC CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="topicModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="topicModalTitle">検討事項を追加</span>
+      <button class="modal-close" onclick="closeModal('topicModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="topicTitleInput" placeholder="検討事項のタイトル" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label class="form-label">背景・コンテキスト</label>
+        <textarea class="form-textarea" id="topicContextInput" placeholder="なぜこの検討が必要か" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">カテゴリ</label>
+          <select class="form-select" id="topicCategoryInput">
+            <option value="対象者定義">対象者定義</option>
+            <option value="ゴール設計">ゴール設計</option>
+            <option value="差別化">差別化</option>
+            <option value="業務適用">業務適用</option>
+            <option value="形式・構成">形式・構成</option>
+            <option value="カリキュラム">カリキュラム</option>
+            <option value="運営">運営</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">優先度</label>
+          <select class="form-select" id="topicPriorityInput">
+            <option value="high">高</option>
+            <option value="medium" selected>中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="topicStatusInput">
+            <option value="未着手">未着手</option>
+            <option value="議論中">議論中</option>
+            <option value="結論待ち">結論待ち</option>
+            <option value="決定済み">決定済み</option>
+            <option value="取り下げ">取り下げ</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="topicAssigneeInput">
+            <option value="">未割り当て</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">期日</label>
+        <input class="form-input" id="topicDueInput" type="date">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('topicModal')">キャンセル</button>
+      <button class="btn btn-primary" id="topicSubmitBtn" onclick="submitTopic()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOPIC DETAIL MODAL ===== -->
+<div class="modal-overlay" id="topicDetailModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title">検討事項の詳細</span>
+      <button class="modal-close" onclick="closeModal('topicDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="topicDetailBody">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('topicDetailModal')">閉じる</button>
+      <button class="btn btn-primary" id="topicDetailEditBtn" onclick="editTopicFromDetail()">編集</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DECISION CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="decisionModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="decisionModalTitle">決定を記録</span>
+      <button class="modal-close" onclick="closeModal('decisionModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="decisionTitleInput" placeholder="決定事項のタイトル" maxlength="200">
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容</label>
+        <textarea class="form-textarea" id="decisionContentInput" placeholder="決定内容の詳細" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">理由・根拠</label>
+        <textarea class="form-textarea" id="decisionRationaleInput" placeholder="なぜこの決定に至ったか" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="decisionStatusInput">
+            <option value="有効">有効</option>
+            <option value="見直し中">見直し中</option>
+            <option value="撤回">撤回</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">関連トピック</label>
+          <select class="form-select" id="decisionTopicInput">
+            <option value="">なし</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">影響範囲</label>
+        <input class="form-input" id="decisionImpactInput" placeholder="例: カリキュラム, 運営">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('decisionModal')">キャンセル</button>
+      <button class="btn btn-primary" id="decisionSubmitBtn" onclick="submitDecision()">記録</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DECISION DETAIL MODAL ===== -->
+<div class="modal-overlay" id="decisionDetailModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title">決定事項の詳細</span>
+      <button class="modal-close" onclick="closeModal('decisionDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="decisionDetailBody">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('decisionDetailModal')">閉じる</button>
+      <button class="btn btn-primary" id="decisionDetailEditBtn" onclick="editDecisionFromDetail()">編集</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== MEMBERS PANEL ===== -->
 <div class="members-panel" id="membersPanel">
   <div class="members-header">
@@ -1023,7 +1672,6 @@ html, body {
 
 <script>
 // ============ CONFIG ============
-// TODO: Replace with actual Firebase config after project creation
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCtgM6XHFwqniFT2YcfFK1lKe_MtEuP9h8",
   authDomain: "camp-dashborad.firebaseapp.com",
@@ -1041,10 +1689,18 @@ let db = null;
 let currentUser = null;  // { uid, name, avatar }
 let tasks = {};          // { taskId: taskData }
 let users = {};          // { slackUserId: { name, avatar, last_login } }
+let planningTopics = {}; // { topicId: topicData }
+let decisions = {};      // { decisionId: decisionData }
 let editingTaskId = null;
 let deleteTaskId = null;
+let editingTopicId = null;
+let editingDecisionId = null;
+let viewingTopicId = null;
+let viewingDecisionId = null;
 let currentFilter = { status: 'all', assignee: 'all', priority: 'all' };
 let currentSort = 'created';
+let topicFilter = { category: '全て', status: '全て' };
+let activeTab = 'overview';
 
 // ============ INIT ============
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -1144,6 +1800,8 @@ function logout() {
   currentUser = null;
   tasks = {};
   users = {};
+  planningTopics = {};
+  decisions = {};
   showLogin();
 }
 
@@ -1174,6 +1832,36 @@ function showApp() {
   // Start listening
   listenTasks();
   listenUsers();
+  listenPlanningTopics();
+  listenDecisions();
+}
+
+// ============ TAB NAVIGATION ============
+function switchTab(tabName, el) {
+  activeTab = tabName;
+  // Update tab items
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  // Update tab panes
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  const paneMap = {
+    overview: 'paneOverview',
+    topics: 'paneTopics',
+    tasks: 'paneTasks',
+    timeline: 'paneTimeline',
+    records: 'paneRecords'
+  };
+  document.getElementById(paneMap[tabName]).classList.add('active');
+}
+
+function handleFabClick() {
+  if (activeTab === 'topics') {
+    openTopicCreateModal();
+  } else if (activeTab === 'records') {
+    openDecisionCreateModal();
+  } else {
+    openCreateModal('todo');
+  }
 }
 
 // ============ FIREBASE LISTENERS ============
@@ -1182,6 +1870,7 @@ function listenTasks() {
     tasks = snap.val() || {};
     renderBoard();
     updateStats();
+    renderOverview();
   });
 }
 
@@ -1192,10 +1881,490 @@ function listenUsers() {
     renderMembers();
     updateAssigneeOptions();
     updateFilterChips();
+    renderTopics();
+    renderDecisions();
   });
 }
 
-// ============ RENDER ============
+function listenPlanningTopics() {
+  db.ref('planning_topics').on('value', snap => {
+    planningTopics = snap.val() || {};
+    renderTopics();
+    renderOverview();
+    updateDecisionTopicOptions();
+  });
+}
+
+function listenDecisions() {
+  db.ref('decisions').on('value', snap => {
+    decisions = snap.val() || {};
+    renderDecisions();
+    renderOverview();
+  });
+}
+
+// ============ OVERVIEW ============
+function renderOverview() {
+  // Open topics count (not decided, not dropped)
+  const openTopics = Object.values(planningTopics).filter(t =>
+    t.status !== '決定済み' && t.status !== '取り下げ'
+  ).length;
+  document.getElementById('overviewOpenTopics').textContent = openTopics;
+
+  // Open tasks count (not done)
+  const openTasks = Object.values(tasks).filter(t => t.status !== 'done').length;
+  document.getElementById('overviewOpenTasks').textContent = openTasks;
+
+  // Recent decisions (last 7 days)
+  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const recentDecisions = Object.values(decisions).filter(d =>
+    (d.decided_at || d.created_at || 0) > sevenDaysAgo
+  );
+  document.getElementById('overviewRecentDecisions').textContent = recentDecisions.length;
+
+  // Activity feed: recent decisions, sorted by date, max 10
+  const allDecisions = Object.entries(decisions)
+    .map(([id, d]) => ({ id, ...d, _type: 'decision' }))
+    .sort((a, b) => (b.decided_at || b.created_at || 0) - (a.decided_at || a.created_at || 0))
+    .slice(0, 10);
+
+  const feed = document.getElementById('activityFeed');
+  if (allDecisions.length === 0) {
+    feed.innerHTML = '<div class="activity-empty">まだアクティビティはありません</div>';
+    return;
+  }
+
+  feed.innerHTML = allDecisions.map(d => {
+    const author = d.decided_by && users[d.decided_by] ? users[d.decided_by] : null;
+    const dateStr = new Date(d.decided_at || d.created_at || Date.now()).toLocaleDateString('ja-JP', {
+      month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'
+    });
+    const topicTitle = d.topic_id && planningTopics[d.topic_id] ? planningTopics[d.topic_id].title : '';
+    return `
+      <div class="activity-item">
+        <div class="activity-icon" style="background:rgba(66,199,96,0.15);color:var(--accent-green);">✓</div>
+        <div class="activity-body">
+          <div class="activity-title">決定: ${escHtml(d.title)}</div>
+          <div class="activity-meta">
+            ${author ? escHtml(author.name) + ' · ' : ''}${dateStr}
+            ${topicTitle ? ' · 関連: ' + escHtml(topicTitle) : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ============ PLANNING TOPICS ============
+function filterTopicCategory(cat, el) {
+  topicFilter.category = cat;
+  el.closest('.topics-toolbar').querySelectorAll('[data-topic-cat]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTopics();
+}
+
+function filterTopicStatus(status, el) {
+  topicFilter.status = status;
+  el.closest('.topics-toolbar').querySelectorAll('[data-topic-status]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTopics();
+}
+
+function renderTopics() {
+  const list = document.getElementById('topicsList');
+  let items = Object.entries(planningTopics).map(([id, t]) => ({ id, ...t }));
+
+  // Apply filters
+  if (topicFilter.category !== '全て') {
+    items = items.filter(t => t.category === topicFilter.category);
+  }
+  if (topicFilter.status !== '全て') {
+    items = items.filter(t => t.status === topicFilter.status);
+  }
+
+  // Sort by priority then created_at
+  const pOrder = { high: 0, medium: 1, low: 2 };
+  items.sort((a, b) => (pOrder[a.priority] ?? 1) - (pOrder[b.priority] ?? 1) || (b.created_at || 0) - (a.created_at || 0));
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="topics-empty"><div class="topics-empty-icon">💬</div>検討事項はまだありません</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(t => {
+    const priorityColor = t.priority === 'high' ? 'var(--priority-high)' :
+                          t.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
+    const assignee = t.assignee_id && users[t.assignee_id] ? users[t.assignee_id] : null;
+    const dueStr = t.due_date ? new Date(t.due_date + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+
+    return `
+      <div class="topic-card" onclick="openTopicDetail('${t.id}')">
+        <div class="topic-priority-bar" style="background:${priorityColor}"></div>
+        <div class="topic-header">
+          <span class="topic-title">${escHtml(t.title)}</span>
+        </div>
+        ${t.context ? `<div class="topic-context">${escHtml(t.context)}</div>` : ''}
+        <div class="topic-meta">
+          <span class="category-badge" data-cat="${escHtml(t.category)}">${escHtml(t.category)}</span>
+          <span class="status-badge s-${escHtml(t.status)}">${escHtml(t.status)}</span>
+          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+          ${dueStr ? `<span style="font-size:11px;color:var(--text-muted)">〆${dueStr}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openTopicCreateModal() {
+  editingTopicId = null;
+  document.getElementById('topicModalTitle').textContent = '検討事項を追加';
+  document.getElementById('topicSubmitBtn').textContent = '追加';
+  document.getElementById('topicTitleInput').value = '';
+  document.getElementById('topicContextInput').value = '';
+  document.getElementById('topicCategoryInput').value = '対象者定義';
+  document.getElementById('topicPriorityInput').value = 'medium';
+  document.getElementById('topicStatusInput').value = '未着手';
+  document.getElementById('topicAssigneeInput').value = '';
+  document.getElementById('topicDueInput').value = '';
+  updateTopicAssigneeOptions();
+  openModal('topicModal');
+  setTimeout(() => document.getElementById('topicTitleInput').focus(), 100);
+}
+
+function openTopicEditModal(topicId) {
+  const topic = planningTopics[topicId];
+  if (!topic) return;
+  editingTopicId = topicId;
+  document.getElementById('topicModalTitle').textContent = '検討事項を編集';
+  document.getElementById('topicSubmitBtn').textContent = '保存';
+  document.getElementById('topicTitleInput').value = topic.title || '';
+  document.getElementById('topicContextInput').value = topic.context || '';
+  document.getElementById('topicCategoryInput').value = topic.category || '対象者定義';
+  document.getElementById('topicPriorityInput').value = topic.priority || 'medium';
+  document.getElementById('topicStatusInput').value = topic.status || '未着手';
+  document.getElementById('topicAssigneeInput').value = topic.assignee_id || '';
+  document.getElementById('topicDueInput').value = topic.due_date || '';
+  updateTopicAssigneeOptions();
+  openModal('topicModal');
+}
+
+function updateTopicAssigneeOptions() {
+  const sel = document.getElementById('topicAssigneeInput');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) =>
+      `<option value="${uid}">${escHtml(u.name)}</option>`
+    ).join('');
+  sel.value = currentVal;
+}
+
+async function submitTopic() {
+  const title = document.getElementById('topicTitleInput').value.trim();
+  if (!title) {
+    document.getElementById('topicTitleInput').style.borderColor = 'var(--accent-red)';
+    return;
+  }
+
+  const data = {
+    title,
+    context: document.getElementById('topicContextInput').value.trim(),
+    category: document.getElementById('topicCategoryInput').value,
+    priority: document.getElementById('topicPriorityInput').value,
+    status: document.getElementById('topicStatusInput').value,
+    assignee_id: document.getElementById('topicAssigneeInput').value || null,
+    due_date: document.getElementById('topicDueInput').value || null,
+    updated_at: firebase.database.ServerValue.TIMESTAMP,
+  };
+
+  try {
+    if (editingTopicId) {
+      await db.ref(`planning_topics/${editingTopicId}`).update(data);
+      toast('検討事項を更新しました');
+    } else {
+      data.created_by = currentUser.uid;
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('planning_topics').push(data);
+      toast('検討事項を追加しました');
+    }
+    closeModal('topicModal');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+function openTopicDetail(topicId) {
+  viewingTopicId = topicId;
+  const topic = planningTopics[topicId];
+  if (!topic) return;
+
+  const assignee = topic.assignee_id && users[topic.assignee_id] ? users[topic.assignee_id] : null;
+  const creator = topic.created_by && users[topic.created_by] ? users[topic.created_by] : null;
+  const createdStr = topic.created_at ? new Date(topic.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+  const dueStr = topic.due_date || '';
+  const priorityLabel = topic.priority === 'high' ? '高' : topic.priority === 'low' ? '低' : '中';
+  const priorityColor = topic.priority === 'high' ? 'var(--priority-high)' : topic.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
+
+  // Linked decision
+  let decisionLink = '';
+  if (topic.decision_id && decisions[topic.decision_id]) {
+    const dec = decisions[topic.decision_id];
+    decisionLink = `<div style="margin-top:8px;"><span style="font-size:12px;color:var(--text-muted)">決定:</span> <span class="decision-topic-link" onclick="event.stopPropagation(); closeModal('topicDetailModal'); openDecisionDetail('${topic.decision_id}')">${escHtml(dec.title)}</span></div>`;
+  }
+
+  const body = document.getElementById('topicDetailBody');
+  body.innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <span class="category-badge" data-cat="${escHtml(topic.category)}">${escHtml(topic.category)}</span>
+        <span class="status-badge s-${escHtml(topic.status)}">${escHtml(topic.status)}</span>
+        <span style="font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600;color:${priorityColor};background:rgba(0,0,0,0.1);">優先度: ${priorityLabel}</span>
+      </div>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:8px;">${escHtml(topic.title)}</h3>
+      ${topic.context ? `<p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escHtml(topic.context)}</p>` : ''}
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;">
+        ${assignee ? `<span>担当: ${escHtml(assignee.name)}</span>` : ''}
+        ${dueStr ? `<span>期日: ${dueStr}</span>` : ''}
+        ${creator ? `<span>作成者: ${escHtml(creator.name)}</span>` : ''}
+        ${createdStr ? `<span>作成日: ${createdStr}</span>` : ''}
+      </div>
+      ${decisionLink}
+    </div>
+    <div class="comment-thread">
+      <div class="comment-thread-title">コメント</div>
+      <div class="comment-list" id="topicCommentList"></div>
+      <div class="comment-input-row">
+        <input class="form-input" id="topicCommentInput" placeholder="コメントを追加..." maxlength="500" onkeydown="if(event.key==='Enter')addTopicComment()">
+        <button class="btn btn-primary" onclick="addTopicComment()">送信</button>
+      </div>
+    </div>`;
+
+  renderTopicComments(topicId);
+  openModal('topicDetailModal');
+}
+
+function renderTopicComments(topicId) {
+  const commentList = document.getElementById('topicCommentList');
+  const topic = planningTopics[topicId];
+  if (!topic || !topic.comments) {
+    commentList.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:12px;padding:12px;">コメントはまだありません</div>';
+    return;
+  }
+
+  const comments = Object.entries(topic.comments)
+    .map(([id, c]) => ({ id, ...c }))
+    .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+
+  commentList.innerHTML = comments.map(c => {
+    const author = c.author_id && users[c.author_id] ? users[c.author_id] : null;
+    const timeStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+    return `
+      <div class="comment-item">
+        ${author && author.avatar ? `<img class="comment-avatar" src="${escHtml(author.avatar)}" alt="">` : '<div class="comment-avatar" style="background:var(--bg-card)"></div>'}
+        <div class="comment-body">
+          <div class="comment-author">${author ? escHtml(author.name) : '不明'}</div>
+          <div class="comment-text">${escHtml(c.text)}</div>
+          <div class="comment-time">${timeStr}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function addTopicComment() {
+  if (!viewingTopicId) return;
+  const input = document.getElementById('topicCommentInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  try {
+    await db.ref(`planning_topics/${viewingTopicId}/comments`).push({
+      text,
+      author_id: currentUser.uid,
+      created_at: firebase.database.ServerValue.TIMESTAMP
+    });
+    input.value = '';
+    // Comments will re-render via listener since they are nested under planning_topics
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+function editTopicFromDetail() {
+  if (!viewingTopicId) return;
+  closeModal('topicDetailModal');
+  openTopicEditModal(viewingTopicId);
+}
+
+// ============ DECISIONS / RECORDS ============
+function renderDecisions() {
+  const list = document.getElementById('decisionsList');
+  let items = Object.entries(decisions).map(([id, d]) => ({ id, ...d }));
+
+  // Sort by decided_at desc
+  items.sort((a, b) => (b.decided_at || b.created_at || 0) - (a.decided_at || a.created_at || 0));
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="records-empty">決定事項はまだありません</div>';
+    return;
+  }
+
+  list.innerHTML = items.map((d, idx) => {
+    const num = 'D-' + String(items.length - idx).padStart(3, '0');
+    const author = d.decided_by && users[d.decided_by] ? users[d.decided_by] : null;
+    const dateStr = d.decided_at ? new Date(d.decided_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) :
+                    d.created_at ? new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+    const topicTitle = d.topic_id && planningTopics[d.topic_id] ? planningTopics[d.topic_id].title : '';
+    const status = d.status || '有効';
+
+    return `
+      <div class="decision-card" onclick="openDecisionDetail('${d.id}')">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="decision-number">${num}</span>
+          <span class="status-badge s-${escHtml(status)}">${escHtml(status)}</span>
+        </div>
+        <div class="decision-title">${escHtml(d.title)}</div>
+        ${d.content ? `<div class="decision-content">${escHtml(d.content)}</div>` : ''}
+        <div class="decision-meta">
+          ${author ? `<span class="decision-author">${author.avatar ? `<img src="${escHtml(author.avatar)}" alt="">` : ''}${escHtml(author.name)}</span>` : ''}
+          <span class="decision-date">${dateStr}</span>
+          ${topicTitle ? `<span class="decision-topic-link" onclick="event.stopPropagation(); openTopicDetail('${d.topic_id}')">関連: ${escHtml(topicTitle)}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openDecisionCreateModal(topicId) {
+  editingDecisionId = null;
+  document.getElementById('decisionModalTitle').textContent = '決定を記録';
+  document.getElementById('decisionSubmitBtn').textContent = '記録';
+  document.getElementById('decisionTitleInput').value = '';
+  document.getElementById('decisionContentInput').value = '';
+  document.getElementById('decisionRationaleInput').value = '';
+  document.getElementById('decisionStatusInput').value = '有効';
+  document.getElementById('decisionTopicInput').value = topicId || '';
+  document.getElementById('decisionImpactInput').value = '';
+  updateDecisionTopicOptions();
+  openModal('decisionModal');
+  setTimeout(() => document.getElementById('decisionTitleInput').focus(), 100);
+}
+
+function openDecisionEditModal(decisionId) {
+  const dec = decisions[decisionId];
+  if (!dec) return;
+  editingDecisionId = decisionId;
+  document.getElementById('decisionModalTitle').textContent = '決定を編集';
+  document.getElementById('decisionSubmitBtn').textContent = '保存';
+  document.getElementById('decisionTitleInput').value = dec.title || '';
+  document.getElementById('decisionContentInput').value = dec.content || '';
+  document.getElementById('decisionRationaleInput').value = dec.rationale || '';
+  document.getElementById('decisionStatusInput').value = dec.status || '有効';
+  document.getElementById('decisionTopicInput').value = dec.topic_id || '';
+  document.getElementById('decisionImpactInput').value = (dec.impact_areas || []).join(', ');
+  updateDecisionTopicOptions();
+  openModal('decisionModal');
+}
+
+function updateDecisionTopicOptions() {
+  const sel = document.getElementById('decisionTopicInput');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">なし</option>' +
+    Object.entries(planningTopics).map(([id, t]) =>
+      `<option value="${id}">${escHtml(t.title)}</option>`
+    ).join('');
+  sel.value = currentVal;
+}
+
+async function submitDecision() {
+  const title = document.getElementById('decisionTitleInput').value.trim();
+  if (!title) {
+    document.getElementById('decisionTitleInput').style.borderColor = 'var(--accent-red)';
+    return;
+  }
+
+  const impactStr = document.getElementById('decisionImpactInput').value.trim();
+  const impactAreas = impactStr ? impactStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const topicId = document.getElementById('decisionTopicInput').value || null;
+
+  const data = {
+    title,
+    content: document.getElementById('decisionContentInput').value.trim(),
+    rationale: document.getElementById('decisionRationaleInput').value.trim(),
+    status: document.getElementById('decisionStatusInput').value,
+    topic_id: topicId,
+    impact_areas: impactAreas,
+    decided_by: currentUser.uid,
+    decided_at: firebase.database.ServerValue.TIMESTAMP,
+  };
+
+  try {
+    if (editingDecisionId) {
+      await db.ref(`decisions/${editingDecisionId}`).update(data);
+      // Update linked topic if changed
+      if (topicId) {
+        await db.ref(`planning_topics/${topicId}`).update({ decision_id: editingDecisionId });
+      }
+      toast('決定事項を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      const newRef = await db.ref('decisions').push(data);
+      // Link topic to decision
+      if (topicId) {
+        await db.ref(`planning_topics/${topicId}`).update({
+          decision_id: newRef.key,
+          status: '決定済み',
+          updated_at: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+      toast('決定を記録しました');
+    }
+    closeModal('decisionModal');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+function openDecisionDetail(decisionId) {
+  viewingDecisionId = decisionId;
+  const dec = decisions[decisionId];
+  if (!dec) return;
+
+  const author = dec.decided_by && users[dec.decided_by] ? users[dec.decided_by] : null;
+  const dateStr = dec.decided_at ? new Date(dec.decided_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+  const status = dec.status || '有効';
+  const topicTitle = dec.topic_id && planningTopics[dec.topic_id] ? planningTopics[dec.topic_id].title : '';
+
+  // Calculate decision number
+  const allDecs = Object.entries(decisions)
+    .map(([id, d]) => ({ id, ...d }))
+    .sort((a, b) => (a.decided_at || a.created_at || 0) - (b.decided_at || b.created_at || 0));
+  const decIdx = allDecs.findIndex(d => d.id === decisionId);
+  const num = 'D-' + String(decIdx + 1).padStart(3, '0');
+
+  const body = document.getElementById('decisionDetailBody');
+  body.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span class="decision-number" style="font-size:13px;">${num}</span>
+        <span class="status-badge s-${escHtml(status)}">${escHtml(status)}</span>
+      </div>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:12px;">${escHtml(dec.title)}</h3>
+      ${dec.content ? `<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">内容</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escHtml(dec.content)}</p></div>` : ''}
+      ${dec.rationale ? `<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">理由・根拠</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;">${escHtml(dec.rationale)}</p></div>` : ''}
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;">
+        ${author ? `<span>決定者: ${escHtml(author.name)}</span>` : ''}
+        ${dateStr ? `<span>決定日: ${dateStr}</span>` : ''}
+        ${dec.impact_areas && dec.impact_areas.length ? `<span>影響: ${dec.impact_areas.map(a => escHtml(a)).join(', ')}</span>` : ''}
+      </div>
+      ${topicTitle ? `<div style="margin-top:8px;"><span style="font-size:12px;color:var(--text-muted)">関連トピック:</span> <span class="decision-topic-link" onclick="closeModal('decisionDetailModal'); openTopicDetail('${dec.topic_id}')">${escHtml(topicTitle)}</span></div>` : ''}
+    </div>`;
+
+  openModal('decisionDetailModal');
+}
+
+function editDecisionFromDetail() {
+  if (!viewingDecisionId) return;
+  closeModal('decisionDetailModal');
+  openDecisionEditModal(viewingDecisionId);
+}
+
+// ============ RENDER (TASKS) ============
 function renderBoard() {
   const columns = { todo: [], doing: [], done: [] };
 
@@ -1216,8 +2385,8 @@ function renderBoard() {
     if (currentSort === 'due') {
       col.sort((a, b) => {
         const da = a.due_date || '9999-12-31';
-        const db = b.due_date || '9999-12-31';
-        return da.localeCompare(db) || (a.created_at || 0) - (b.created_at || 0);
+        const db2 = b.due_date || '9999-12-31';
+        return da.localeCompare(db2) || (a.created_at || 0) - (b.created_at || 0);
       });
     } else if (currentSort === 'priority') {
       col.sort((a, b) => (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1) || (a.created_at || 0) - (b.created_at || 0));
@@ -1244,7 +2413,6 @@ function renderColumn(bodyId, countId, items) {
   body.innerHTML = items.map(task => {
     const priorityColor = task.priority === 'high' ? 'var(--priority-high)' :
                           task.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
-    const priorityLabel = task.priority === 'high' ? '高' : task.priority === 'low' ? '低' : '中';
     const assignee = task.assignee_id && users[task.assignee_id] ? users[task.assignee_id] : null;
     const dateStr = task.created_at ? new Date(task.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
     const dueStr = task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
@@ -1550,9 +2718,19 @@ function closeModal(id) {
   const el = document.getElementById(id || 'taskModal');
   el.classList.remove('active');
   document.body.style.overflow = '';
-  editingTaskId = null;
-  // Reset input border
-  document.getElementById('taskTitleInput').style.borderColor = '';
+  if (!id || id === 'taskModal') {
+    editingTaskId = null;
+    // Reset input border
+    document.getElementById('taskTitleInput').style.borderColor = '';
+  }
+  if (id === 'topicModal') {
+    editingTopicId = null;
+    document.getElementById('topicTitleInput').style.borderColor = '';
+  }
+  if (id === 'decisionModal') {
+    editingDecisionId = null;
+    document.getElementById('decisionTitleInput').style.borderColor = '';
+  }
 }
 
 function toggleColumn(headerEl) {
@@ -1585,6 +2763,10 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeModal('taskModal');
     closeDeleteModal();
+    closeModal('topicModal');
+    closeModal('topicDetailModal');
+    closeModal('decisionModal');
+    closeModal('decisionDetailModal');
     document.getElementById('membersPanel').classList.remove('active');
   }
 });
