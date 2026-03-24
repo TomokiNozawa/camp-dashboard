@@ -1216,7 +1216,7 @@ function renderColumn(bodyId, countId, items) {
                 <span class="task-assignee-name">${escHtml(assignee.name)}</span>` :
                 `<span class="task-assignee-name" style="color:var(--text-muted)">未割り当て</span>`}
             </div>
-            <span class="task-date">${dueStr ? `<span style="${isOverdue ? 'color:var(--accent-red)' : ''}">${dueStr}まで</span> · ` : ''}${dateStr}</span>
+            <span class="task-date">${dueStr ? `<span style="${isOverdue ? 'color:var(--accent-red)' : ''}">〆${dueStr}</span> · ` : ''}作成${dateStr}</span>
           </div>
         </div>
       </div>`;

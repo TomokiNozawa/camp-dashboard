@@ -106,7 +106,7 @@ async function handleAuthCallback(url, request, env) {
 
     // Create JWT (8 hour expiry)
     const jwt = await createJWT(
-      { sub: userId, name: displayName, avatar, exp: Math.floor(Date.now() / 1000) + 28800 },
+      { sub: userId, name: displayName, avatar, exp: Math.floor(Date.now() / 1000) + 604800 },  // 7 days
       env.JWT_SECRET
     );
 
