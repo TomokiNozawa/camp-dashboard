@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Camp Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0e14;
+  --bg-secondary: #0d1117;
+  --bg-card: #151b23;
+  --bg-card-hover: #1a2230;
+  --bg-modal: #1a2230;
+  --bg-input: #1a2230;
+  --border: #253040;
+  --border-light: #1e2a38;
+  --text-primary: #e8edf4;
+  --text-secondary: #8b95a5;
+  --text-muted: #5c6878;
+  --accent-blue: #5aadff;
+  --accent-green: #42c760;
+  --accent-yellow: #e8b840;
+  --accent-red: #f85149;
+  --accent-purple: #b88cff;
+  --accent-orange: #f0883e;
+  --gradient-brand: linear-gradient(135deg, #5aadff, #b88cff);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --priority-high: #f85149;
+  --priority-medium: #e8b840;
+  --priority-low: #42c760;
+  --status-todo: #8b95a5;
+  --status-doing: #e8b840;
+  --status-done: #42c760;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============ LOGIN SCREEN ============ */
+.screen { display: none; height: 100%; }
+.screen.active { display: flex; }
+
+#loginScreen {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 24px;
+  text-align: center;
+}
+
+.login-logo {
+  width: 72px; height: 72px;
+  border-radius: 18px;
+  background: var(--gradient-brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; font-weight: 700; color: #fff;
+  box-shadow: 0 4px 24px rgba(90,173,255,0.3);
+}
+
+.login-title {
+  font-size: 28px; font-weight: 700;
+  background: var(--gradient-brand);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.login-subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: -16px;
+  line-height: 1.6;
+}
+
+.btn-slack {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 14px 32px;
+  background: #4A154B;
+  color: #fff;
+  border: none; border-radius: var(--radius);
+  font-size: 16px; font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 16px rgba(74,21,75,0.4);
+}
+.btn-slack:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(74,21,75,0.5); }
+.btn-slack:active { transform: translateY(0); }
+
+.btn-slack svg { width: 22px; height: 22px; }
+
+.login-error {
+  color: var(--accent-red);
+  font-size: 13px;
+  min-height: 20px;
+}
+
+.login-footer {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ============ APP SCREEN ============ */
+#appScreen {
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 100vh;
+}
+
+/* Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.header-logo {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--gradient-brand);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff;
+}
+
+.header-title {
+  font-size: 17px; font-weight: 700;
+}
+
+.header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.header-user {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text-secondary);
+}
+
+.header-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.btn-icon {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--transition);
+  font-size: 16px;
+}
+.btn-icon:hover { background: var(--bg-card); color: var(--text-primary); }
+
+/* Stats Bar */
+.stats-bar {
+  display: flex;
+  gap: 2px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.stat-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  user-select: none;
+}
+.stat-item:hover { background: var(--bg-card); }
+.stat-item.active { background: var(--bg-card); color: var(--text-primary); }
+
+.stat-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stat-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Filter Bar */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.filter-chip {
+  padding: 5px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  font-family: inherit;
+}
+.filter-chip:hover { border-color: var(--accent-blue); color: var(--text-primary); }
+.filter-chip.active { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; }
+
+/* Kanban Board */
+.kanban-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  min-height: 0;
+}
+
+/* Desktop: 3-column grid */
+.kanban-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.kanban-column {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  min-height: 0;
+}
+.kanban-column:last-child { border-right: none; }
+
+.column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.column-header-left {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.column-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+
+.column-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.column-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.column-add-btn {
+  width: 28px; height: 28px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  transition: var(--transition);
+}
+.column-add-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+.column-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.column-body::-webkit-scrollbar { width: 4px; }
+.column-body::-webkit-scrollbar-track { background: transparent; }
+.column-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Task Card */
+.task-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  touch-action: pan-y;
+}
+.task-card:hover { background: var(--bg-card-hover); border-color: var(--border-light); }
+
+.task-priority-bar {
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.task-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.task-title {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;
+  word-break: break-word;
+}
+
+.task-actions {
+  display: flex; gap: 2px;
+  opacity: 0;
+  transition: var(--transition);
+}
+.task-card:hover .task-actions { opacity: 1; }
+
+.task-action-btn {
+  width: 26px; height: 26px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  transition: var(--transition);
+}
+.task-action-btn:hover { background: var(--bg-primary); color: var(--text-primary); }
+.task-action-btn.danger:hover { color: var(--accent-red); }
+
+.task-description {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.task-assignee {
+  display: flex; align-items: center; gap: 6px;
+}
+
+.task-assignee-avatar {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+}
+
+.task-assignee-name {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.task-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.priority-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Swipe actions (mobile) */
+.task-card-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.swipe-actions {
+  position: absolute;
+  top: 0; right: 0;
+  height: 100%;
+  display: flex;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+.swipe-actions.visible { opacity: 1; pointer-events: auto; }
+
+.swipe-btn {
+  width: 64px;
+  height: 100%;
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 4px;
+  font-family: inherit;
+}
+.swipe-btn-edit { background: var(--accent-blue); }
+.swipe-btn-move { background: var(--accent-green); }
+.swipe-btn-delete { background: var(--accent-red); }
+
+/* Empty Column */
+.column-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.column-empty-icon {
+  font-size: 32px;
+  opacity: 0.5;
+}
+
+/* FAB */
+.fab {
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  right: 20px;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  border: none;
+  color: #fff;
+  font-size: 28px;
+  cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(90,173,255,0.4);
+  transition: var(--transition);
+  z-index: 90;
+}
+.fab:hover { transform: scale(1.08); }
+.fab:active { transform: scale(0.95); }
+
+/* ============ MODAL ============ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--bg-modal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-close {
+  width: 32px; height: 32px;
+  border: none; border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: var(--transition);
+}
+.modal-close:hover { background: var(--bg-card); color: var(--text-primary); }
+
+.modal-body { padding: 20px; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.form-input, .form-textarea, .form-select {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: var(--transition);
+  outline: none;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  border-color: var(--accent-blue);
+}
+
+.form-textarea { resize: vertical; min-height: 80px; }
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238b95a5' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--accent-blue);
+  color: #fff;
+}
+.btn-primary:hover { opacity: 0.9; }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--bg-card); color: var(--text-primary); }
+
+.btn-danger {
+  background: var(--accent-red);
+  color: #fff;
+}
+.btn-danger:hover { opacity: 0.9; }
+
+/* ============ MEMBERS PANEL ============ */
+.members-panel {
+  display: none;
+  position: fixed;
+  top: 0; right: 0;
+  width: 280px;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  z-index: 150;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+.members-panel.active { display: flex; }
+
+.members-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.members-title { font-size: 15px; font-weight: 600; }
+
+.members-list {
+  flex: 1; overflow-y: auto;
+  padding: 12px;
+}
+
+.member-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 8px;
+  border-radius: 8px;
+  transition: var(--transition);
+}
+.member-item:hover { background: var(--bg-card); }
+
+.member-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+}
+
+.member-name { font-size: 14px; font-weight: 500; }
+.member-status { font-size: 11px; color: var(--text-muted); }
+
+/* ============ TOAST ============ */
+.toast-container {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex; flex-direction: column; gap: 8px;
+  align-items: center;
+}
+
+.toast {
+  padding: 10px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 13px;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease, toastOut 0.3s ease 2.7s forwards;
+}
+
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* ============ MOBILE ============ */
+@media (max-width: 768px) {
+  .app-header { padding: 10px 16px; }
+  .header-title { font-size: 15px; }
+  .header-user .header-user-name { display: none; }
+
+  .stats-bar { padding: 8px 16px; }
+  .filter-bar { padding: 8px 16px; }
+
+  .kanban-board {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+
+  .kanban-column {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .column-header { cursor: pointer; }
+  .kanban-column.collapsed .column-body { display: none; }
+  .kanban-column.collapsed .column-header::after {
+    content: '▸';
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+
+  .column-body { max-height: 50vh; }
+
+  .fab { display: flex; }
+
+  .task-actions { opacity: 0 !important; }
+
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal {
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    max-height: 85vh;
+  }
+
+  .members-panel { width: 100%; }
+}
+
+/* ============ LOADING ============ */
+.loading-spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Drag hint */
+.drag-over { background: rgba(90,173,255,0.08); border-style: dashed; }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen" class="screen active">
+  <div class="login-logo">C</div>
+  <div class="login-title">Camp Dashboard</div>
+  <div class="login-subtitle">Claude Cowork Camp の企画・タスク管理<br>チームメンバー限定</div>
+  <button class="btn-slack" onclick="startSlackLogin()">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zm-1.27 0a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.163 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.163 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.163 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zm0-1.27a2.527 2.527 0 0 1-2.52-2.523 2.527 2.527 0 0 1 2.52-2.52h6.315A2.528 2.528 0 0 1 24 15.163a2.528 2.528 0 0 1-2.522 2.523h-6.315z"/></svg>
+    Slack でログイン
+  </button>
+  <div id="loginError" class="login-error"></div>
+  <div class="login-footer">指定Slackチャンネルのメンバーのみアクセスできます</div>
+</div>
+
+<!-- ===== APP SCREEN ===== -->
+<div id="appScreen" class="screen">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="header-logo">C</div>
+      <span class="header-title">Camp Dashboard</span>
+    </div>
+    <div class="header-right">
+      <div class="header-user">
+        <span class="header-user-name" id="headerUserName"></span>
+        <img class="header-avatar" id="headerAvatar" alt="">
+      </div>
+      <button class="btn-icon" onclick="toggleMembers()" title="メンバー">👥</button>
+      <button class="btn-icon" onclick="logout()" title="ログアウト">⏻</button>
+    </div>
+  </header>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="stat-item active" data-filter="all" onclick="filterByStatus('all', this)">
+      <span class="stat-count" id="statAll">0</span> 全タスク
+    </div>
+    <div class="stat-item" data-filter="todo" onclick="filterByStatus('todo', this)">
+      <span class="stat-dot" style="background:var(--status-todo)"></span>
+      <span class="stat-count" id="statTodo">0</span> 未着手
+    </div>
+    <div class="stat-item" data-filter="doing" onclick="filterByStatus('doing', this)">
+      <span class="stat-dot" style="background:var(--status-doing)"></span>
+      <span class="stat-count" id="statDoing">0</span> 進行中
+    </div>
+    <div class="stat-item" data-filter="done" onclick="filterByStatus('done', this)">
+      <span class="stat-dot" style="background:var(--status-done)"></span>
+      <span class="stat-count" id="statDone">0</span> 完了
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-chip active" data-assignee="all" onclick="filterByAssignee('all', this)">全員</button>
+    <!-- Dynamically populated with member names -->
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-container">
+    <div class="kanban-board" id="kanbanBoard">
+      <!-- Todo Column -->
+      <div class="kanban-column" data-status="todo" id="colTodo">
+        <div class="column-header" onclick="toggleColumn(this)">
+          <div class="column-header-left">
+            <span class="column-dot" style="background:var(--status-todo)"></span>
+            <span class="column-title">未着手</span>
+            <span class="column-count" id="countTodo">0</span>
+          </div>
+          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('todo')">+</button>
+        </div>
+        <div class="column-body" id="bodyTodo"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'todo')">
+        </div>
+      </div>
+
+      <!-- Doing Column -->
+      <div class="kanban-column" data-status="doing" id="colDoing">
+        <div class="column-header" onclick="toggleColumn(this)">
+          <div class="column-header-left">
+            <span class="column-dot" style="background:var(--status-doing)"></span>
+            <span class="column-title">進行中</span>
+            <span class="column-count" id="countDoing">0</span>
+          </div>
+          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('doing')">+</button>
+        </div>
+        <div class="column-body" id="bodyDoing"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'doing')">
+        </div>
+      </div>
+
+      <!-- Done Column -->
+      <div class="kanban-column" data-status="done" id="colDone">
+        <div class="column-header" onclick="toggleColumn(this)">
+          <div class="column-header-left">
+            <span class="column-dot" style="background:var(--status-done)"></span>
+            <span class="column-title">完了</span>
+            <span class="column-count" id="countDone">0</span>
+          </div>
+          <button class="column-add-btn" onclick="event.stopPropagation(); openCreateModal('done')">+</button>
+        </div>
+        <div class="column-body" id="bodyDone"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, 'done')">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAB (mobile) -->
+  <button class="fab" onclick="openCreateModal('todo')">+</button>
+</div>
+
+<!-- ===== TASK CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">タスクを追加</span>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="taskTitleInput" placeholder="タスク名を入力" maxlength="120">
+      </div>
+      <div class="form-group">
+        <label class="form-label">詳細</label>
+        <textarea class="form-textarea" id="taskDescInput" placeholder="詳細を入力（任意）" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">優先度</label>
+          <select class="form-select" id="taskPriorityInput">
+            <option value="medium">中</option>
+            <option value="high">高</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="taskAssigneeInput">
+            <option value="">未割り当て</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">ステータス</label>
+        <select class="form-select" id="taskStatusInput">
+          <option value="todo">未着手</option>
+          <option value="doing">進行中</option>
+          <option value="done">完了</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer" id="modalFooter">
+      <button class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-primary" id="modalSubmitBtn" onclick="submitTask()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELETE CONFIRM MODAL ===== -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+    <div class="modal-header">
+      <span class="modal-title">タスクを削除</span>
+      <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--text-secondary);font-size:14px">このタスクを削除しますか？この操作は取り消せません。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeDeleteModal()">キャンセル</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">削除</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MEMBERS PANEL ===== -->
+<div class="members-panel" id="membersPanel">
+  <div class="members-header">
+    <span class="members-title">メンバー</span>
+    <button class="modal-close" onclick="toggleMembers()">&times;</button>
+  </div>
+  <div class="members-list" id="membersList"></div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
+// ============ CONFIG ============
+// TODO: Replace with actual Firebase config after project creation
+const FIREBASE_CONFIG = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "camp-dashboard-XXXXX.firebaseapp.com",
+  databaseURL: "https://camp-dashboard-XXXXX-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "camp-dashboard-XXXXX",
+  storageBucket: "camp-dashboard-XXXXX.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "YOUR_APP_ID"
+};
+
+// TODO: Replace with actual Cloudflare Worker URL after deployment
+const AUTH_WORKER_URL = "https://camp-auth.YOUR_SUBDOMAIN.workers.dev";
+
+// ============ STATE ============
+let db = null;
+let currentUser = null;  // { uid, name, avatar }
+let tasks = {};          // { taskId: taskData }
+let users = {};          // { slackUserId: { name, avatar, last_login } }
+let editingTaskId = null;
+let deleteTaskId = null;
+let currentFilter = { status: 'all', assignee: 'all' };
+
+// ============ INIT ============
+firebase.initializeApp(FIREBASE_CONFIG);
+db = firebase.database();
+const auth = firebase.auth();
+
+// Check for auth tokens in hash (returned from Cloudflare Worker)
+function checkAuthHash() {
+  const hash = window.location.hash.substring(1);
+  if (!hash) return false;
+
+  const params = new URLSearchParams(hash);
+  window.location.hash = '';  // Clear hash immediately
+
+  const error = params.get('error');
+  if (error) {
+    showLoginError(decodeURIComponent(error));
+    return false;
+  }
+
+  const jwt = params.get('jwt');
+  const ft = params.get('ft');
+  const name = params.get('name');
+  const avatar = params.get('avatar');
+
+  if (jwt && ft) {
+    sessionStorage.setItem('camp_jwt', jwt);
+    sessionStorage.setItem('camp_name', name || 'Unknown');
+    sessionStorage.setItem('camp_avatar', avatar || '');
+    signInWithFirebase(ft);
+    return true;
+  }
+  return false;
+}
+
+async function signInWithFirebase(customToken) {
+  try {
+    const cred = await auth.signInWithCustomToken(customToken);
+    const uid = cred.user.uid;
+    const name = sessionStorage.getItem('camp_name') || 'Unknown';
+    const avatar = sessionStorage.getItem('camp_avatar') || '';
+
+    currentUser = { uid, name, avatar };
+
+    // Update user info in Firebase
+    await db.ref(`users/${uid}`).update({
+      name,
+      avatar,
+      last_login: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    showApp();
+  } catch (e) {
+    showLoginError('Firebase認証エラー: ' + e.message);
+  }
+}
+
+function init() {
+  // Check for returning from OAuth
+  if (checkAuthHash()) return;
+
+  // Check existing session
+  const jwt = sessionStorage.getItem('camp_jwt');
+  if (jwt) {
+    // Validate JWT expiry
+    try {
+      const payload = JSON.parse(atob(jwt.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if (payload.exp > Date.now() / 1000) {
+        // JWT still valid, try to restore session
+        auth.onAuthStateChanged(user => {
+          if (user) {
+            currentUser = {
+              uid: user.uid,
+              name: sessionStorage.getItem('camp_name') || 'Unknown',
+              avatar: sessionStorage.getItem('camp_avatar') || ''
+            };
+            showApp();
+          } else {
+            showLogin();
+          }
+        });
+        return;
+      }
+    } catch (e) { /* invalid JWT, fall through to login */ }
+  }
+  showLogin();
+}
+
+// ============ AUTH ============
+function startSlackLogin() {
+  window.location.href = AUTH_WORKER_URL + '/auth/start';
+}
+
+function logout() {
+  sessionStorage.clear();
+  auth.signOut();
+  currentUser = null;
+  tasks = {};
+  users = {};
+  showLogin();
+}
+
+function showLogin() {
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('appScreen').classList.remove('active');
+}
+
+function showLoginError(msg) {
+  document.getElementById('loginError').textContent = msg;
+}
+
+// ============ APP ============
+function showApp() {
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('appScreen').classList.add('active');
+
+  // Update header
+  document.getElementById('headerUserName').textContent = currentUser.name;
+  const avatarEl = document.getElementById('headerAvatar');
+  if (currentUser.avatar) {
+    avatarEl.src = currentUser.avatar;
+    avatarEl.style.display = '';
+  } else {
+    avatarEl.style.display = 'none';
+  }
+
+  // Start listening
+  listenTasks();
+  listenUsers();
+}
+
+// ============ FIREBASE LISTENERS ============
+function listenTasks() {
+  db.ref('tasks').on('value', snap => {
+    tasks = snap.val() || {};
+    renderBoard();
+    updateStats();
+  });
+}
+
+function listenUsers() {
+  db.ref('users').on('value', snap => {
+    users = snap.val() || {};
+    renderMembers();
+    updateAssigneeOptions();
+    updateFilterChips();
+  });
+}
+
+// ============ RENDER ============
+function renderBoard() {
+  const columns = { todo: [], doing: [], done: [] };
+
+  Object.entries(tasks).forEach(([id, task]) => {
+    if (!columns[task.status]) return;
+
+    // Apply filters
+    if (currentFilter.status !== 'all' && task.status !== currentFilter.status) return;
+    if (currentFilter.assignee !== 'all' && task.assignee_id !== currentFilter.assignee) return;
+
+    columns[task.status].push({ id, ...task });
+  });
+
+  // Sort by order, then created_at
+  for (const col of Object.values(columns)) {
+    col.sort((a, b) => (a.order || 0) - (b.order || 0) || (a.created_at || 0) - (b.created_at || 0));
+  }
+
+  renderColumn('bodyTodo', 'countTodo', columns.todo);
+  renderColumn('bodyDoing', 'countDoing', columns.doing);
+  renderColumn('bodyDone', 'countDone', columns.done);
+}
+
+function renderColumn(bodyId, countId, items) {
+  const body = document.getElementById(bodyId);
+  const count = document.getElementById(countId);
+  count.textContent = items.length;
+
+  if (items.length === 0) {
+    body.innerHTML = `<div class="column-empty"><div class="column-empty-icon">📋</div>タスクなし</div>`;
+    return;
+  }
+
+  body.innerHTML = items.map(task => {
+    const priorityColor = task.priority === 'high' ? 'var(--priority-high)' :
+                          task.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
+    const priorityLabel = task.priority === 'high' ? '高' : task.priority === 'low' ? '低' : '中';
+    const assignee = task.assignee_id && users[task.assignee_id] ? users[task.assignee_id] : null;
+    const dateStr = task.created_at ? new Date(task.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+    const nextStatus = task.status === 'todo' ? 'doing' : task.status === 'doing' ? 'done' : 'todo';
+    const nextLabel = nextStatus === 'doing' ? '▶' : nextStatus === 'done' ? '✓' : '↩';
+
+    return `
+      <div class="task-card-wrapper">
+        <div class="task-card" draggable="true"
+             ondragstart="handleDragStart(event, '${task.id}')"
+             ondragend="handleDragEnd(event)"
+             onclick="openEditModal('${task.id}')">
+          <div class="task-priority-bar" style="background:${priorityColor}"></div>
+          <div class="task-header">
+            <span class="task-title">${escHtml(task.title)}</span>
+            <div class="task-actions">
+              <button class="task-action-btn" onclick="event.stopPropagation(); moveTask('${task.id}','${nextStatus}')" title="ステータス変更">${nextLabel}</button>
+              <button class="task-action-btn danger" onclick="event.stopPropagation(); openDeleteModal('${task.id}')" title="削除">🗑</button>
+            </div>
+          </div>
+          ${task.description ? `<div class="task-description">${escHtml(task.description)}</div>` : ''}
+          <div class="task-meta">
+            <div class="task-assignee">
+              ${assignee ? `<img class="task-assignee-avatar" src="${escHtml(assignee.avatar)}" alt="">
+                <span class="task-assignee-name">${escHtml(assignee.name)}</span>` :
+                `<span class="task-assignee-name" style="color:var(--text-muted)">未割り当て</span>`}
+            </div>
+            <span class="task-date">${dateStr}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  const all = Object.values(tasks);
+  document.getElementById('statAll').textContent = all.length;
+  document.getElementById('statTodo').textContent = all.filter(t => t.status === 'todo').length;
+  document.getElementById('statDoing').textContent = all.filter(t => t.status === 'doing').length;
+  document.getElementById('statDone').textContent = all.filter(t => t.status === 'done').length;
+}
+
+function renderMembers() {
+  const list = document.getElementById('membersList');
+  const entries = Object.entries(users);
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="column-empty">メンバーなし</div>';
+    return;
+  }
+  list.innerHTML = entries.map(([uid, u]) => {
+    const lastLogin = u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+    return `
+      <div class="member-item">
+        ${u.avatar ? `<img class="member-avatar" src="${escHtml(u.avatar)}" alt="">` : '<div class="member-avatar" style="background:var(--bg-card)"></div>'}
+        <div>
+          <div class="member-name">${escHtml(u.name)}</div>
+          <div class="member-status">最終ログイン: ${lastLogin}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateAssigneeOptions() {
+  const sel = document.getElementById('taskAssigneeInput');
+  const currentVal = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) =>
+      `<option value="${uid}">${escHtml(u.name)}</option>`
+    ).join('');
+  sel.value = currentVal;
+}
+
+function updateFilterChips() {
+  const bar = document.getElementById('filterBar');
+  const allChip = bar.querySelector('[data-assignee="all"]');
+  // Remove old member chips
+  bar.querySelectorAll('[data-assignee]:not([data-assignee="all"])').forEach(el => el.remove());
+  // Add member chips
+  Object.entries(users).forEach(([uid, u]) => {
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip' + (currentFilter.assignee === uid ? ' active' : '');
+    chip.dataset.assignee = uid;
+    chip.textContent = u.name;
+    chip.onclick = () => filterByAssignee(uid, chip);
+    bar.appendChild(chip);
+  });
+}
+
+// ============ FILTERS ============
+function filterByStatus(status, el) {
+  currentFilter.status = status;
+  document.querySelectorAll('.stat-item').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+
+  // Show/hide columns on mobile
+  document.querySelectorAll('.kanban-column').forEach(col => {
+    if (status === 'all' || col.dataset.status === status) {
+      col.style.display = '';
+    } else {
+      col.style.display = 'none';
+    }
+  });
+
+  renderBoard();
+}
+
+function filterByAssignee(assignee, el) {
+  currentFilter.assignee = assignee;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderBoard();
+}
+
+// ============ TASK CRUD ============
+function openCreateModal(status) {
+  editingTaskId = null;
+  document.getElementById('modalTitle').textContent = 'タスクを追加';
+  document.getElementById('modalSubmitBtn').textContent = '追加';
+  document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskDescInput').value = '';
+  document.getElementById('taskPriorityInput').value = 'medium';
+  document.getElementById('taskAssigneeInput').value = '';
+  document.getElementById('taskStatusInput').value = status || 'todo';
+  openModal('taskModal');
+  setTimeout(() => document.getElementById('taskTitleInput').focus(), 100);
+}
+
+function openEditModal(taskId) {
+  const task = tasks[taskId];
+  if (!task) return;
+  editingTaskId = taskId;
+  document.getElementById('modalTitle').textContent = 'タスクを編集';
+  document.getElementById('modalSubmitBtn').textContent = '保存';
+  document.getElementById('taskTitleInput').value = task.title || '';
+  document.getElementById('taskDescInput').value = task.description || '';
+  document.getElementById('taskPriorityInput').value = task.priority || 'medium';
+  document.getElementById('taskAssigneeInput').value = task.assignee_id || '';
+  document.getElementById('taskStatusInput').value = task.status || 'todo';
+  openModal('taskModal');
+}
+
+async function submitTask() {
+  const title = document.getElementById('taskTitleInput').value.trim();
+  if (!title) {
+    document.getElementById('taskTitleInput').style.borderColor = 'var(--accent-red)';
+    return;
+  }
+
+  const data = {
+    title,
+    description: document.getElementById('taskDescInput').value.trim(),
+    priority: document.getElementById('taskPriorityInput').value,
+    assignee_id: document.getElementById('taskAssigneeInput').value || null,
+    status: document.getElementById('taskStatusInput').value,
+    updated_at: firebase.database.ServerValue.TIMESTAMP,
+  };
+
+  try {
+    if (editingTaskId) {
+      await db.ref(`tasks/${editingTaskId}`).update(data);
+      toast('タスクを更新しました');
+    } else {
+      data.created_by = currentUser.uid;
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      data.order = Date.now();
+      await db.ref('tasks').push(data);
+      toast('タスクを追加しました');
+    }
+    closeModal();
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+async function moveTask(taskId, newStatus) {
+  try {
+    await db.ref(`tasks/${taskId}`).update({
+      status: newStatus,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    });
+    const labels = { todo: '未着手', doing: '進行中', done: '完了' };
+    toast(`→ ${labels[newStatus]}`);
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+function openDeleteModal(taskId) {
+  deleteTaskId = taskId;
+  openModal('deleteModal');
+}
+
+function closeDeleteModal() {
+  deleteTaskId = null;
+  closeModal('deleteModal');
+}
+
+async function confirmDelete() {
+  if (!deleteTaskId) return;
+  try {
+    await db.ref(`tasks/${deleteTaskId}`).remove();
+    toast('タスクを削除しました');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+  closeDeleteModal();
+}
+
+// ============ DRAG & DROP ============
+let draggedTaskId = null;
+
+function handleDragStart(e, taskId) {
+  draggedTaskId = taskId;
+  e.dataTransfer.effectAllowed = 'move';
+  e.target.style.opacity = '0.5';
+}
+
+function handleDragEnd(e) {
+  e.target.style.opacity = '';
+  draggedTaskId = null;
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  e.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(e, newStatus) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (draggedTaskId) {
+    moveTask(draggedTaskId, newStatus);
+  }
+}
+
+// ============ MOBILE SWIPE ============
+let touchStartX = 0;
+let touchCurrentX = 0;
+let swipingCard = null;
+
+document.addEventListener('touchstart', e => {
+  const card = e.target.closest('.task-card');
+  if (!card) return;
+  touchStartX = e.touches[0].clientX;
+  swipingCard = card;
+}, { passive: true });
+
+document.addEventListener('touchmove', e => {
+  if (!swipingCard) return;
+  touchCurrentX = e.touches[0].clientX;
+  const dx = touchCurrentX - touchStartX;
+  if (dx < -30) {
+    swipingCard.style.transform = `translateX(${Math.max(dx, -128)}px)`;
+    const actions = swipingCard.closest('.task-card-wrapper')?.querySelector('.swipe-actions');
+    if (actions) actions.classList.add('visible');
+  }
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  if (swipingCard) {
+    swipingCard.style.transform = '';
+    // Hide swipe actions after a delay
+    setTimeout(() => {
+      document.querySelectorAll('.swipe-actions.visible').forEach(a => a.classList.remove('visible'));
+    }, 3000);
+  }
+  swipingCard = null;
+  touchStartX = 0;
+}, { passive: true });
+
+// ============ UI HELPERS ============
+function openModal(id) {
+  const el = document.getElementById(id || 'taskModal');
+  el.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id || 'taskModal');
+  el.classList.remove('active');
+  document.body.style.overflow = '';
+  editingTaskId = null;
+  // Reset input border
+  document.getElementById('taskTitleInput').style.borderColor = '';
+}
+
+function toggleColumn(headerEl) {
+  if (window.innerWidth > 768) return;
+  headerEl.closest('.kanban-column').classList.toggle('collapsed');
+}
+
+function toggleMembers() {
+  document.getElementById('membersPanel').classList.toggle('active');
+}
+
+function toast(msg) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Close modals on Escape / overlay click
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    closeModal('taskModal');
+    closeDeleteModal();
+    document.getElementById('membersPanel').classList.remove('active');
+  }
+});
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) {
+      closeModal(overlay.id);
+    }
+  });
+});
+
+// ============ START ============
+init();
+</script>
+</body>
+</html>
