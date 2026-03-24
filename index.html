@@ -45,6 +45,35 @@
   --status-done: #42c760;
 }
 
+.light {
+  --bg-primary: #f5f6f8;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f2f5;
+  --bg-modal: #ffffff;
+  --bg-input: #f0f2f5;
+  --border: #d8dee6;
+  --border-light: #e4e8ee;
+  --text-primary: #1f2328;
+  --text-secondary: #5c6878;
+  --text-muted: #8b95a5;
+  --accent-blue: #1a7cdb;
+  --accent-green: #1a8a3e;
+  --accent-yellow: #c4960a;
+  --accent-red: #d1242f;
+  --accent-purple: #8250df;
+  --accent-orange: #d4700a;
+  --gradient-brand: linear-gradient(135deg, #1a7cdb, #8250df);
+  --shadow: 0 1px 4px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+  --priority-high: #d1242f;
+  --priority-medium: #c4960a;
+  --priority-low: #1a8a3e;
+  --status-todo: #8b95a5;
+  --status-doing: #c4960a;
+  --status-done: #1a8a3e;
+}
+
 html, body {
   height: 100%;
   overflow: hidden;
@@ -806,6 +835,7 @@ html, body {
         <span class="header-user-name" id="headerUserName"></span>
         <img class="header-avatar" id="headerAvatar" alt="">
       </div>
+      <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="テーマ切替">☀</button>
       <button class="btn-icon" onclick="toggleMembers()" title="メンバー">👥</button>
       <button class="btn-icon" onclick="logout()" title="ログアウト">⏻</button>
     </div>
@@ -1526,7 +1556,25 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   });
 });
 
+// ============ THEME ============
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('camp_theme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀';
+  document.querySelector('meta[name="theme-color"]').content = isLight ? '#ffffff' : '#0a0e14';
+}
+
+function applyTheme() {
+  const theme = localStorage.getItem('camp_theme') || 'dark';
+  if (theme === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('themeToggle').textContent = '🌙';
+    document.querySelector('meta[name="theme-color"]').content = '#ffffff';
+  }
+}
+
 // ============ START ============
+applyTheme();
 init();
 </script>
 </body>
