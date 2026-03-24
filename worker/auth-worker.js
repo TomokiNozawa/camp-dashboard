@@ -42,7 +42,7 @@ function handleAuthStart(url, env) {
   const state = crypto.randomUUID();
   const params = new URLSearchParams({
     client_id: env.SLACK_CLIENT_ID,
-    scope: "",
+    scope: "channels:read,groups:read,users:read",
     redirect_uri: `${url.origin}/auth/callback`,
     state,
   });
