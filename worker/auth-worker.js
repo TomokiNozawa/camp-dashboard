@@ -90,36 +90,40 @@ async function handleAuthCallback(url, request, env) {
 
   // Check channel membership using Bot Token
   const memberCheck = await isChannelMember(userId, env);
-  if (!memberCheck) {
-    return redirectWithError(env, "アクセス権限がありません。指定チャンネルのメンバーのみ利用できます。");
+  if (!memberCheck.ok) {
+    return redirectWithError(env, `Access denied (${memberCheck.error}). channel=${env.ALLOWED_CHANNEL_ID}, user=${userId}`);
   }
 
-  // Get user profile via Bot Token
-  const profileRes = await fetch(`https://slack.com/api/users.info?user=${userId}`, {
-    headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
-  });
-  const profileData = await profileRes.json();
-  const profile = profileData.ok ? profileData.user : null;
-  const displayName = profile?.real_name || profile?.name || "Unknown";
-  const avatar = profile?.profile?.image_72 || "";
+  try {
+    // Get user profile via Bot Token
+    const profileRes = await fetch(`https://slack.com/api/users.info?user=${userId}`, {
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+    });
+    const profileData = await profileRes.json();
+    const profile = profileData.ok ? profileData.user : null;
+    const displayName = profile?.real_name || profile?.name || "Unknown";
+    const avatar = profile?.profile?.image_72 || "";
 
-  // Create JWT (8 hour expiry)
-  const jwt = await createJWT(
-    { sub: userId, name: displayName, avatar, exp: Math.floor(Date.now() / 1000) + 28800 },
-    env.JWT_SECRET
-  );
+    // Create JWT (8 hour expiry)
+    const jwt = await createJWT(
+      { sub: userId, name: displayName, avatar, exp: Math.floor(Date.now() / 1000) + 28800 },
+      env.JWT_SECRET
+    );
 
-  // Create Firebase Custom Token
-  const firebaseToken = await createFirebaseCustomToken(userId, env);
+    // Create Firebase Custom Token
+    const firebaseToken = await createFirebaseCustomToken(userId, env);
 
-  // Redirect back to frontend with tokens in hash fragment
-  const frontendUrl = env.FRONTEND_URL || "https://tomokinozawa.github.io/camp-dashboard";
-  return new Response(null, {
-    status: 302,
-    headers: {
-      Location: `${frontendUrl}#jwt=${jwt}&ft=${firebaseToken}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatar)}`,
-    },
-  });
+    // Redirect back to frontend with tokens in hash fragment
+    const frontendUrl = env.FRONTEND_URL || "https://tomokinozawa.github.io/camp-dashboard";
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: `${frontendUrl}#jwt=${jwt}&ft=${firebaseToken}&name=${encodeURIComponent(displayName)}&avatar=${encodeURIComponent(avatar)}`,
+      },
+    });
+  } catch (e) {
+    return redirectWithError(env, `Internal error: ${e.message}`);
+  }
 }
 
 async function isChannelMember(userId, env) {
@@ -135,11 +139,11 @@ async function isChannelMember(userId, env) {
       headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
     });
     const data = await res.json();
-    if (!data.ok) return false;
-    if (data.members.includes(userId)) return true;
+    if (!data.ok) return { ok: false, error: data.error };
+    if (data.members.includes(userId)) return { ok: true };
     cursor = data.response_metadata?.next_cursor || "";
   } while (cursor);
-  return false;
+  return { ok: false, error: "user_not_in_channel" };
 }
 
 // JWT creation using Web Crypto API (HS256)
@@ -192,7 +196,11 @@ async function createFirebaseCustomToken(uid, env) {
 
 function base64url(input) {
   if (typeof input === "string") {
-    return btoa(input).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    // Handle UTF-8 strings (e.g. Japanese names)
+    const bytes = new TextEncoder().encode(input);
+    let binary = "";
+    for (const b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
   const bytes = new Uint8Array(input);
   let binary = "";
