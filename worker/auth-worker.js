@@ -246,7 +246,26 @@ async function handleSlackEvent(request, env) {
     if (!message) return json({ ok: true });
 
     const msgText = message.text || '';
-    const title = msgText.substring(0, 80).replace(/\n/g, ' ');
+
+    // Resolve @mentions to user names and IDs
+    const mentionMap = {};
+    const mentionRegex = /<@(U[A-Z0-9]+)>/g;
+    let match;
+    while ((match = mentionRegex.exec(msgText)) !== null) {
+      const uid = match[1];
+      if (!mentionMap[uid]) {
+        const uRes = await fetch(`https://slack.com/api/users.info?user=${uid}`, {
+          headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+        });
+        const uData = await uRes.json();
+        mentionMap[uid] = uData.ok ? (uData.user?.real_name || uData.user?.name || uid) : uid;
+      }
+    }
+    // Replace <@UXXXX> with real names for AI input
+    let readableText = msgText;
+    for (const [uid, name] of Object.entries(mentionMap)) {
+      readableText = readableText.replace(new RegExp(`<@${uid}>`, 'g'), name);
+    }
 
     // Get message author name
     const authorRes = await fetch(`https://slack.com/api/users.info?user=${message.user}`, {
@@ -254,6 +273,67 @@ async function handleSlackEvent(request, env) {
     });
     const authorData = await authorRes.json();
     const authorName = authorData.ok ? (authorData.user?.real_name || authorData.user?.name || 'Unknown') : 'Unknown';
+
+    // Get all workspace members for assignee matching
+    const membersRes = await fetch(`https://slack.com/api/conversations.members?channel=${env.ALLOWED_CHANNEL_ID}&limit=200`, {
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+    });
+    const membersData = await membersRes.json();
+    const memberIds = membersData.ok ? membersData.members : [];
+    const memberNames = {};
+    for (const uid of memberIds) {
+      if (mentionMap[uid]) { memberNames[uid] = mentionMap[uid]; continue; }
+      const r = await fetch(`https://slack.com/api/users.info?user=${uid}`, {
+        headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+      });
+      const d = await r.json();
+      if (d.ok && !d.user?.is_bot) memberNames[uid] = d.user?.real_name || d.user?.name || uid;
+    }
+    const memberList = Object.entries(memberNames).map(([uid, name]) => `${name} (${uid})`).join(', ');
+
+    // AI analysis via OpenAI
+    const today = new Date().toISOString().split('T')[0];
+    const typeLabel = { tasks: 'task', planning_topics: 'planning topic', risks_issues: 'risk/issue', decisions: 'decision' }[mapping.target];
+    const aiPrompt = `You are analyzing a Slack message to register it as a ${typeLabel} in a project dashboard for "Claude Cowork Camp" (a training program).
+
+Message author: ${authorName}
+Message: ${readableText}
+Today: ${today}
+Channel members: ${memberList}
+
+Respond in JSON only (no markdown, no explanation):
+{
+  "title": "concise title in Japanese (max 60 chars)",
+  "summary": "brief summary of the request/content in Japanese (2-3 sentences)",
+  "assignee_id": "Slack user ID of the most appropriate assignee from the member list, or null if unclear",
+  "due_date": "YYYY-MM-DD if mentioned or reasonably inferred (within 1-2 weeks for urgent, 1 month for normal), or null",
+  "priority": "high/medium/low based on urgency",
+  "category": "for planning topics only: one of 対象者定義/ゴール設計/差別化/業務適用/形式・構成/カリキュラム/運営, otherwise null"
+}`;
+
+    let aiResult = { title: readableText.substring(0, 60).replace(/\n/g, ' '), summary: readableText.substring(0, 300), assignee_id: null, due_date: null, priority: 'medium', category: null };
+
+    if (env.OPENAI_API_KEY) {
+      try {
+        const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: aiPrompt }],
+            temperature: 0.3,
+            max_tokens: 300,
+          }),
+        });
+        const aiData = await aiRes.json();
+        const content = aiData.choices?.[0]?.message?.content || '';
+        const parsed = JSON.parse(content.replace(/```json?\n?/g, '').replace(/```/g, '').trim());
+        aiResult = { ...aiResult, ...parsed };
+      } catch (e) { /* fallback to defaults */ }
+    }
 
     // Build the Slack message permalink
     const slackLink = `https://slack.com/archives/${channel}/p${item.ts.replace('.', '')}`;
@@ -266,12 +346,12 @@ async function handleSlackEvent(request, env) {
     if (mapping.target === 'tasks') {
       fbPath = 'tasks';
       fbData = {
-        title,
-        description: `Slack: ${authorName} (${now})\n${msgText.substring(0, 500)}`,
+        title: aiResult.title,
+        description: aiResult.summary + '\n\n---\nSlack: ' + authorName + ' (' + now + ')',
         status: 'todo',
-        priority: 'medium',
-        assignee_id: null,
-        due_date: null,
+        priority: aiResult.priority || 'medium',
+        assignee_id: aiResult.assignee_id,
+        due_date: aiResult.due_date,
         source: 'slack',
         slack_link: slackLink,
         created_by: reactUser,
@@ -282,13 +362,13 @@ async function handleSlackEvent(request, env) {
     } else if (mapping.target === 'planning_topics') {
       fbPath = 'planning_topics';
       fbData = {
-        title,
-        context: `Slack: ${authorName} (${now})\n${msgText.substring(0, 500)}`,
-        category: '\u672a\u5206\u985e',
+        title: aiResult.title,
+        context: aiResult.summary + '\n\n---\nSlack: ' + authorName + ' (' + now + ')',
+        category: aiResult.category || '\u672a\u5206\u985e',
         status: '\u672a\u7740\u624b',
-        priority: 'medium',
-        assignee_id: null,
-        due_date: null,
+        priority: aiResult.priority || 'medium',
+        assignee_id: aiResult.assignee_id,
+        due_date: aiResult.due_date,
         decision_id: null,
         source: 'slack',
         slack_link: slackLink,
@@ -299,15 +379,15 @@ async function handleSlackEvent(request, env) {
     } else if (mapping.target === 'risks_issues') {
       fbPath = 'risks_issues';
       fbData = {
-        title,
+        title: aiResult.title,
         type: 'issue',
-        impact: 'medium',
+        impact: aiResult.priority === 'high' ? 'high' : aiResult.priority === 'low' ? 'low' : 'medium',
         likelihood: null,
         status: '\u672a\u5bfe\u5fdc',
         mitigation: '',
-        assignee_id: null,
-        due_date: null,
-        related_area: '',
+        assignee_id: aiResult.assignee_id,
+        due_date: aiResult.due_date,
+        related_area: aiResult.category || '',
         source: 'slack',
         slack_link: slackLink,
         created_by: reactUser,
@@ -316,13 +396,13 @@ async function handleSlackEvent(request, env) {
     } else if (mapping.target === 'decisions') {
       fbPath = 'decisions';
       fbData = {
-        title,
-        content: msgText.substring(0, 1000),
-        rationale: `Slack: ${authorName} (${now})`,
+        title: aiResult.title,
+        content: aiResult.summary,
+        rationale: 'Slack: ' + authorName + ' (' + now + ')\n' + readableText.substring(0, 500),
         decided_at: now,
-        decided_by: reactUser,
+        decided_by: message.user,
         topic_id: null,
-        impact_areas: '',
+        impact_areas: aiResult.category || '',
         status: '\u6709\u52b9',
         source: 'slack',
         slack_link: slackLink,
@@ -336,11 +416,19 @@ async function handleSlackEvent(request, env) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(fbData),
     });
-    const fbResult = await fbRes.json();
+
+    // Add confirmation reaction
+    await fetch('https://slack.com/api/reactions.add', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel, timestamp: item.ts, name: 'white_check_mark' }),
+    });
 
     // Reply in Slack thread
     const labels = { tasks: '\u30bf\u30b9\u30af', planning_topics: '\u691c\u8a0e\u4e8b\u9805', risks_issues: '\u30ea\u30b9\u30af/\u8ab2\u984c', decisions: '\u610f\u601d\u6c7a\u5b9a' };
-    const replyText = labels[mapping.target] + '\u306b\u767b\u9332\u3057\u307e\u3057\u305f\n\u30bf\u30a4\u30c8\u30eb: ' + title + '\n\u2192 <https://tomokinozawa.github.io/camp-dashboard/|Dashboard \u3067\u78ba\u8a8d>';
+    const assigneeName = aiResult.assignee_id && memberNames[aiResult.assignee_id] ? memberNames[aiResult.assignee_id] : '\u672a\u5272\u308a\u5f53\u3066';
+    const dueDateText = aiResult.due_date || '\u672a\u8a2d\u5b9a';
+    const replyText = labels[mapping.target] + '\u306b\u767b\u9332\u3057\u307e\u3057\u305f\n\u30bf\u30a4\u30c8\u30eb: ' + aiResult.title + '\n\u62c5\u5f53: ' + assigneeName + '\n\u671f\u65e5: ' + dueDateText + '\n\u2192 <https://tomokinozawa.github.io/camp-dashboard/|Dashboard>';
 
     await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
