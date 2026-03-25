@@ -2,8 +2,11 @@
 // Slack OAuth v2 -> JWT + Firebase Custom Token
 // Uses standard OAuth v2 flow (no OpenID Connect required)
 
+// Dedup: track processed event IDs to prevent Slack retry duplicates
+const processedEvents = new Set();
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
     if (request.method === "OPTIONS") {
@@ -13,7 +16,25 @@ export default {
     try {
       if (url.pathname === "/auth/start") return handleAuthStart(url, env);
       if (url.pathname === "/auth/callback") return handleAuthCallback(url, request, env);
-      if (url.pathname === "/slack/events" && request.method === "POST") return handleSlackEvent(request, env);
+      if (url.pathname === "/slack/events" && request.method === "POST") {
+        // Parse body once, return 200 immediately, process in background
+        const body = await request.json();
+        if (body.type === 'url_verification') return json({ challenge: body.challenge });
+
+        // Dedup using event_id (Slack sends same event_id on retries)
+        const eventId = body.event_id || '';
+        if (processedEvents.has(eventId)) return json({ ok: true });
+        processedEvents.add(eventId);
+        // Clean old entries to prevent memory growth
+        if (processedEvents.size > 100) {
+          const first = processedEvents.values().next().value;
+          processedEvents.delete(first);
+        }
+
+        // Return 200 immediately, process in background via waitUntil
+        ctx.waitUntil(processSlackEvent(body, env));
+        return json({ ok: true });
+      }
       if (url.pathname === "/health") return json({ status: "ok" });
       return new Response("Not Found", { status: 404 });
     } catch (e) {
@@ -217,36 +238,29 @@ const REACTION_MAP = {
   white_check_mark: { target: 'decisions', label: 'decision' },
 };
 
-async function handleSlackEvent(request, env) {
-  const body = await request.json();
-
-  // Slack URL verification challenge
-  if (body.type === 'url_verification') {
-    return json({ challenge: body.challenge });
-  }
-
+async function processSlackEvent(body, env) {
   // Only process reaction_added events
-  if (body.event?.type !== 'reaction_added') return json({ ok: true });
+  if (body.event?.type !== 'reaction_added') return;
 
   const { reaction, user: reactUser, item } = body.event;
 
   // Ignore reactions from bots (prevents infinite loop)
   // Check 1: authorizations-based check
-  if (reactUser === body.authorizations?.[0]?.user_id) return json({ ok: true });
+  if (reactUser === body.authorizations?.[0]?.user_id) return;
   // Check 2: call auth.test to get our own bot user ID
   try {
     const authTest = await fetch('https://slack.com/api/auth.test', {
       headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
     });
     const authData = await authTest.json();
-    if (authData.ok && reactUser === authData.user_id) return json({ ok: true });
+    if (authData.ok && reactUser === authData.user_id) return;
   } catch (e) { /* continue */ }
 
   const mapping = REACTION_MAP[reaction];
-  if (!mapping) return json({ ok: true }); // Not a mapped reaction
+  if (!mapping) return; // Not a mapped reaction
 
   // Only process messages in the allowed channel
-  if (item.type !== 'message') return json({ ok: true });
+  if (item.type !== 'message') return;
   const channel = item.channel;
 
   try {
@@ -256,7 +270,7 @@ async function handleSlackEvent(request, env) {
     });
     const msgData = await msgRes.json();
     const message = msgData.ok ? msgData.messages?.[0] : null;
-    if (!message) return json({ ok: true });
+    if (!message) return;
 
     const msgText = message.text || '';
 
@@ -456,9 +470,10 @@ Respond in JSON only (no markdown, no explanation):
       }),
     });
 
-    return json({ ok: true });
+    return;
   } catch (e) {
-    return json({ error: e.message }, 500);
+    // Background task, no response needed
+    return;
   }
 }
 
