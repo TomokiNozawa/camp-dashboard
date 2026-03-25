@@ -1498,40 +1498,12 @@ html, body {
   letter-spacing: 0.3px;
 }
 
-/* Swipe actions (mobile) */
+/* Task card wrapper (legacy class kept for compatibility) */
 .task-card-wrapper {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius);
 }
-
-.swipe-actions {
-  position: absolute;
-  top: 0; right: 0;
-  height: 100%;
-  display: flex;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s;
-}
-.swipe-actions.visible { opacity: 1; pointer-events: auto; }
-
-.swipe-btn {
-  width: 64px;
-  height: 100%;
-  border: none;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 4px;
-  font-family: inherit;
-}
-.swipe-btn-edit { background: var(--accent-blue); }
-.swipe-btn-move { background: var(--accent-green); }
-.swipe-btn-delete { background: var(--accent-red); }
 
 /* Empty Column */
 .column-empty {
@@ -2085,6 +2057,52 @@ html, body {
   color: var(--text-muted);
   padding: 32px 20px;
   font-size: 13px;
+}
+
+/* ============ SWIPE-TO-ACTION (mobile) ============ */
+.swipe-wrapper {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.swipe-content {
+  transition: transform 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.swipe-actions-behind {
+  position: absolute;
+  top: 0; right: 0;
+  height: 100%;
+  display: flex;
+  z-index: 0;
+}
+
+.swipe-action {
+  width: 60px;
+  height: 100%;
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: inherit;
+}
+
+.swipe-action-edit { background: var(--accent-blue); }
+.swipe-action-status { background: var(--accent-green); }
+.swipe-action-delete { background: var(--accent-red); }
+
+/* Hide swipe actions on desktop */
+@media (min-width: 769px) {
+  .swipe-actions-behind { display: none; }
 }
 </style>
 </head>
@@ -3758,19 +3776,29 @@ function renderTopics() {
                           t.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
     const assignee = t.assignee_id && users[t.assignee_id] ? users[t.assignee_id] : null;
     const dueStr = t.due_date ? formatDate(t.due_date) : '';
+    const topicStatusCycle = ['未着手', '議論中', '結論待ち', '決定済み'];
+    const curIdx = topicStatusCycle.indexOf(t.status);
+    const nextTopicStatus = topicStatusCycle[(curIdx + 1) % topicStatusCycle.length];
 
     return `
-      <div class="topic-card" onclick="openTopicDetail('${t.id}')">
-        <div class="topic-priority-bar" style="background:${priorityColor}"></div>
-        <div class="topic-header">
-          <span class="topic-title">${t.source === 'slack' ? '<span title="Slackから登録" style="font-size:12px;margin-right:3px">💬</span>' : ''}${escHtml(t.title)}</span>
+      <div class="swipe-wrapper" data-swipe-type="topic" data-swipe-id="${t.id}">
+        <div class="swipe-actions-behind">
+          <button class="swipe-action swipe-action-edit" onclick="event.stopPropagation(); openTopicEditModal('${t.id}')">&#9998;<br>編集</button>
+          <button class="swipe-action swipe-action-status" onclick="event.stopPropagation(); swipeChangeTopicStatus('${t.id}','${nextTopicStatus}')">&#x21BB;<br>${nextTopicStatus}</button>
+          <button class="swipe-action swipe-action-delete" onclick="event.stopPropagation(); swipeDeleteTopic('${t.id}')">&#128465;<br>削除</button>
         </div>
-        ${t.context ? `<div class="topic-context">${escHtml(t.context)}</div>` : ''}
-        <div class="topic-meta">
-          <span class="category-badge" data-cat="${escHtml(t.category)}">${escHtml(t.category)}</span>
-          <span class="status-badge s-${escHtml(t.status)}">${escHtml(t.status)}</span>
-          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
-          ${dueStr ? `<span style="font-size:11px;color:var(--text-muted)">〆${dueStr}</span>` : ''}
+        <div class="swipe-content topic-card" onclick="openTopicDetail('${t.id}')">
+          <div class="topic-priority-bar" style="background:${priorityColor}"></div>
+          <div class="topic-header">
+            <span class="topic-title">${t.source === 'slack' ? '<span title="Slackから登録" style="font-size:12px;margin-right:3px">💬</span>' : ''}${escHtml(t.title)}</span>
+          </div>
+          ${t.context ? `<div class="topic-context">${escHtml(t.context)}</div>` : ''}
+          <div class="topic-meta">
+            <span class="category-badge" data-cat="${escHtml(t.category)}">${escHtml(t.category)}</span>
+            <span class="status-badge s-${escHtml(t.status)}">${escHtml(t.status)}</span>
+            ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+            ${dueStr ? `<span style="font-size:11px;color:var(--text-muted)">〆${dueStr}</span>` : ''}
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -3989,17 +4017,23 @@ function renderDecisions() {
     const status = d.status || '有効';
 
     return `
-      <div class="decision-card" onclick="openDecisionDetail('${d.id}')">
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="decision-number">${num}</span>
-          <span class="status-badge s-${escHtml(status)}">${escHtml(status)}</span>
+      <div class="swipe-wrapper" data-swipe-type="decision" data-swipe-id="${d.id}">
+        <div class="swipe-actions-behind">
+          <button class="swipe-action swipe-action-edit" onclick="event.stopPropagation(); openDecisionEditModal('${d.id}')">&#9998;<br>編集</button>
+          <button class="swipe-action swipe-action-delete" onclick="event.stopPropagation(); swipeDeleteDecision('${d.id}')">&#128465;<br>削除</button>
         </div>
-        <div class="decision-title">${d.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(d.title)}</div>
-        ${d.content ? `<div class="decision-content">${escHtml(d.content)}</div>` : ''}
-        <div class="decision-meta">
-          ${author ? `<span class="decision-author">${author.avatar ? `<img src="${escHtml(author.avatar)}" alt="">` : ''}${escHtml(author.name)}</span>` : ''}
-          <span class="decision-date">${dateStr}</span>
-          ${topicTitle ? `<span class="decision-topic-link" onclick="event.stopPropagation(); openTopicDetail('${d.topic_id}')">関連: ${escHtml(topicTitle)}</span>` : ''}
+        <div class="swipe-content decision-card" onclick="openDecisionDetail('${d.id}')">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="decision-number">${num}</span>
+            <span class="status-badge s-${escHtml(status)}">${escHtml(status)}</span>
+          </div>
+          <div class="decision-title">${d.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(d.title)}</div>
+          ${d.content ? `<div class="decision-content">${escHtml(d.content)}</div>` : ''}
+          <div class="decision-meta">
+            ${author ? `<span class="decision-author">${author.avatar ? `<img src="${escHtml(author.avatar)}" alt="">` : ''}${escHtml(author.name)}</span>` : ''}
+            <span class="decision-date">${dateStr}</span>
+            ${topicTitle ? `<span class="decision-topic-link" onclick="event.stopPropagation(); openTopicDetail('${d.topic_id}')">関連: ${escHtml(topicTitle)}</span>` : ''}
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -4511,21 +4545,31 @@ function renderRisks() {
     const assignee = r.assignee_id && users[r.assignee_id] ? users[r.assignee_id] : null;
     const typeLabel = r.type === 'risk' ? 'リスク' : '課題';
     const dueStr = r.due_date ? formatDate(r.due_date) : '';
+    const riskStatusCycle = ['未対応', '対応中', '監視中', '解決済み'];
+    const rCurIdx = riskStatusCycle.indexOf(r.status || '未対応');
+    const nextRiskStatus = riskStatusCycle[(rCurIdx + 1) % riskStatusCycle.length];
 
     return `
-      <div class="risk-card${isHighImpact ? ' high-impact' : ''}" onclick="openRiskEditModal('${r.id}')">
-        <div class="risk-header">
-          <span class="risk-title">${r.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(r.title)}</span>
-          <span class="risk-type-badge rt-${escHtml(r.type || 'risk')}">${typeLabel}</span>
-          <span class="impact-badge imp-${escHtml(r.impact || 'medium')}">${impactLabels[r.impact] || '中'}</span>
-          <span class="risk-status-badge rs-${escHtml(r.status || '未対応')}">${escHtml(r.status || '未対応')}</span>
+      <div class="swipe-wrapper" data-swipe-type="risk" data-swipe-id="${r.id}">
+        <div class="swipe-actions-behind">
+          <button class="swipe-action swipe-action-edit" onclick="event.stopPropagation(); openRiskEditModal('${r.id}')">&#9998;<br>編集</button>
+          <button class="swipe-action swipe-action-status" onclick="event.stopPropagation(); swipeChangeRiskStatus('${r.id}','${nextRiskStatus}')">&#x21BB;<br>${nextRiskStatus}</button>
+          <button class="swipe-action swipe-action-delete" onclick="event.stopPropagation(); swipeDeleteRisk('${r.id}')">&#128465;<br>削除</button>
         </div>
-        ${r.mitigation ? `<div class="risk-mitigation">${escHtml(r.mitigation)}</div>` : ''}
-        <div class="risk-meta">
-          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
-          ${dueStr ? `<span>期日: ${dueStr}</span>` : ''}
-          ${r.related_area ? `<span>領域: ${escHtml(r.related_area)}</span>` : ''}
-          ${r.type === 'risk' && r.likelihood ? `<span>発生確率: ${impactLabels[r.likelihood] || '中'}</span>` : ''}
+        <div class="swipe-content risk-card${isHighImpact ? ' high-impact' : ''}" onclick="openRiskEditModal('${r.id}')">
+          <div class="risk-header">
+            <span class="risk-title">${r.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(r.title)}</span>
+            <span class="risk-type-badge rt-${escHtml(r.type || 'risk')}">${typeLabel}</span>
+            <span class="impact-badge imp-${escHtml(r.impact || 'medium')}">${impactLabels[r.impact] || '中'}</span>
+            <span class="risk-status-badge rs-${escHtml(r.status || '未対応')}">${escHtml(r.status || '未対応')}</span>
+          </div>
+          ${r.mitigation ? `<div class="risk-mitigation">${escHtml(r.mitigation)}</div>` : ''}
+          <div class="risk-meta">
+            ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+            ${dueStr ? `<span>期日: ${dueStr}</span>` : ''}
+            ${r.related_area ? `<span>領域: ${escHtml(r.related_area)}</span>` : ''}
+            ${r.type === 'risk' && r.likelihood ? `<span>発生確率: ${impactLabels[r.likelihood] || '中'}</span>` : ''}
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -4775,21 +4819,31 @@ function renderFeedback() {
   list.innerHTML = items.map(f => {
     const creator = f.created_by && users[f.created_by] ? users[f.created_by] : null;
     const dateStr = f.created_at ? formatDateTime(f.created_at) : '';
+    const fbStatusCycle = ['未対応', '検討中', '対応済み'];
+    const fbCurIdx = fbStatusCycle.indexOf(f.action_status || '未対応');
+    const nextFbStatus = fbStatusCycle[(fbCurIdx + 1) % fbStatusCycle.length];
 
     return `
-      <div class="feedback-card" onclick="openFeedbackDetail('${f.id}')">
-        <div class="feedback-header">
-          <span class="feedback-title">${escHtml(f.title)}</span>
-          <span class="fb-type-badge fbt-${escHtml(f.type || 'パイロット結果')}">${escHtml(f.type || 'パイロット結果')}</span>
-          <span class="fb-action-badge fba-${escHtml(f.action_status || '未対応')}">${escHtml(f.action_status || '未対応')}</span>
+      <div class="swipe-wrapper" data-swipe-type="feedback" data-swipe-id="${f.id}">
+        <div class="swipe-actions-behind">
+          <button class="swipe-action swipe-action-edit" onclick="event.stopPropagation(); openFeedbackEditModal('${f.id}')">&#9998;<br>編集</button>
+          <button class="swipe-action swipe-action-status" onclick="event.stopPropagation(); swipeChangeFeedbackStatus('${f.id}','${nextFbStatus}')">&#x21BB;<br>${nextFbStatus}</button>
+          <button class="swipe-action swipe-action-delete" onclick="event.stopPropagation(); swipeDeleteFeedback('${f.id}')">&#128465;<br>削除</button>
         </div>
-        ${f.content ? `<div class="feedback-content">${escHtml(f.content)}</div>` : ''}
-        <div class="feedback-meta">
-          ${f.source ? `<span>From: ${escHtml(f.source)}</span>` : ''}
-          ${f.target ? `<span>対象: ${escHtml(f.target)}</span>` : ''}
-          ${creator ? `<span>${escHtml(creator.name)}</span>` : ''}
-          ${dateStr ? `<span>${dateStr}</span>` : ''}
-          ${f.action_taken ? `<span>対応: ${escHtml(f.action_taken).substring(0, 40)}${f.action_taken.length > 40 ? '...' : ''}</span>` : ''}
+        <div class="swipe-content feedback-card" onclick="openFeedbackDetail('${f.id}')">
+          <div class="feedback-header">
+            <span class="feedback-title">${escHtml(f.title)}</span>
+            <span class="fb-type-badge fbt-${escHtml(f.type || 'パイロット結果')}">${escHtml(f.type || 'パイロット結果')}</span>
+            <span class="fb-action-badge fba-${escHtml(f.action_status || '未対応')}">${escHtml(f.action_status || '未対応')}</span>
+          </div>
+          ${f.content ? `<div class="feedback-content">${escHtml(f.content)}</div>` : ''}
+          <div class="feedback-meta">
+            ${f.source ? `<span>From: ${escHtml(f.source)}</span>` : ''}
+            ${f.target ? `<span>対象: ${escHtml(f.target)}</span>` : ''}
+            ${creator ? `<span>${escHtml(creator.name)}</span>` : ''}
+            ${dateStr ? `<span>${dateStr}</span>` : ''}
+            ${f.action_taken ? `<span>対応: ${escHtml(f.action_taken).substring(0, 40)}${f.action_taken.length > 40 ? '...' : ''}</span>` : ''}
+          </div>
         </div>
       </div>`;
   }).join('');
@@ -5124,8 +5178,13 @@ function renderColumn(bodyId, countId, items) {
     const nextLabel = nextStatus === 'doing' ? '▶' : nextStatus === 'done' ? '✓' : '↩';
 
     return `
-      <div class="task-card-wrapper">
-        <div class="task-card" draggable="true"
+      <div class="task-card-wrapper swipe-wrapper" data-swipe-type="task" data-swipe-id="${task.id}">
+        <div class="swipe-actions-behind">
+          <button class="swipe-action swipe-action-edit" onclick="event.stopPropagation(); openEditModal('${task.id}')">&#9998;<br>編集</button>
+          <button class="swipe-action swipe-action-status" onclick="event.stopPropagation(); moveTask('${task.id}','${nextStatus}')">${nextLabel}<br>${nextStatus === 'doing' ? '進行中' : nextStatus === 'done' ? '完了' : '未着手'}</button>
+          <button class="swipe-action swipe-action-delete" onclick="event.stopPropagation(); swipeDeleteTask('${task.id}')">&#128465;<br>削除</button>
+        </div>
+        <div class="swipe-content task-card" draggable="true"
              ondragstart="handleDragStart(event, '${task.id}')"
              ondragend="handleDragEnd(event)"
              onclick="openEditModal('${task.id}')">
@@ -5407,39 +5466,171 @@ function handleDrop(e, newStatus) {
 }
 
 // ============ MOBILE SWIPE ============
-let touchStartX = 0;
-let touchCurrentX = 0;
-let swipingCard = null;
+let swipeTouchStartX = 0;
+let swipeTouchStartY = 0;
+let swipeActiveEl = null;
+let swipeAutoHideTimer = null;
+const SWIPE_THRESHOLD = 30;
+const SWIPE_MAX = 180;
+
+function isMobileSwipe() {
+  return window.innerWidth <= 768;
+}
+
+function closeAllSwipeActions() {
+  document.querySelectorAll('.swipe-content.swiped').forEach(el => {
+    el.style.transform = '';
+    el.classList.remove('swiped');
+  });
+  if (swipeAutoHideTimer) { clearTimeout(swipeAutoHideTimer); swipeAutoHideTimer = null; }
+}
 
 document.addEventListener('touchstart', e => {
-  const card = e.target.closest('.task-card');
-  if (!card) return;
-  touchStartX = e.touches[0].clientX;
-  swipingCard = card;
+  if (!isMobileSwipe()) return;
+  // If tapping on a swipe action button, let it through
+  if (e.target.closest('.swipe-action')) return;
+  // Close any previously open swipe if tapping elsewhere
+  if (swipeActiveEl && !e.target.closest('.swipe-wrapper')) {
+    closeAllSwipeActions();
+    swipeActiveEl = null;
+    return;
+  }
+  const wrapper = e.target.closest('.swipe-wrapper');
+  if (!wrapper) return;
+  const content = wrapper.querySelector('.swipe-content');
+  if (!content) return;
+  // Close previously open swipe if touching a different card
+  if (swipeActiveEl && swipeActiveEl !== content) {
+    closeAllSwipeActions();
+  }
+  swipeTouchStartX = e.touches[0].clientX;
+  swipeTouchStartY = e.touches[0].clientY;
+  swipeActiveEl = content;
+  content.style.transition = 'none';
 }, { passive: true });
 
 document.addEventListener('touchmove', e => {
-  if (!swipingCard) return;
-  touchCurrentX = e.touches[0].clientX;
-  const dx = touchCurrentX - touchStartX;
-  if (dx < -30) {
-    swipingCard.style.transform = `translateX(${Math.max(dx, -128)}px)`;
-    const actions = swipingCard.closest('.task-card-wrapper')?.querySelector('.swipe-actions');
-    if (actions) actions.classList.add('visible');
+  if (!swipeActiveEl || !isMobileSwipe()) return;
+  const dx = e.touches[0].clientX - swipeTouchStartX;
+  const dy = e.touches[0].clientY - swipeTouchStartY;
+  // If scrolling vertically more than horizontally, abort swipe
+  if (Math.abs(dy) > Math.abs(dx) && !swipeActiveEl.classList.contains('swiped')) {
+    swipeActiveEl.style.transition = '';
+    swipeActiveEl = null;
+    return;
+  }
+  if (dx < -SWIPE_THRESHOLD) {
+    const offset = Math.max(dx, -SWIPE_MAX);
+    swipeActiveEl.style.transform = `translateX(${offset}px)`;
+  } else if (dx > 0 && swipeActiveEl.classList.contains('swiped')) {
+    // Swiping right to close
+    swipeActiveEl.style.transform = `translateX(${Math.min(dx - SWIPE_MAX, 0)}px)`;
   }
 }, { passive: true });
 
-document.addEventListener('touchend', () => {
-  if (swipingCard) {
-    swipingCard.style.transform = '';
-    // Hide swipe actions after a delay
-    setTimeout(() => {
-      document.querySelectorAll('.swipe-actions.visible').forEach(a => a.classList.remove('visible'));
+document.addEventListener('touchend', e => {
+  if (!swipeActiveEl || !isMobileSwipe()) return;
+  const dx = e.changedTouches[0].clientX - swipeTouchStartX;
+  swipeActiveEl.style.transition = 'transform 0.2s ease';
+
+  if (dx < -60) {
+    // Snap open: show action buttons
+    const wrapper = swipeActiveEl.closest('.swipe-wrapper');
+    const actionsCount = wrapper ? wrapper.querySelectorAll('.swipe-action').length : 3;
+    swipeActiveEl.style.transform = `translateX(-${actionsCount * 60}px)`;
+    swipeActiveEl.classList.add('swiped');
+    // Auto-hide after 3 seconds
+    if (swipeAutoHideTimer) clearTimeout(swipeAutoHideTimer);
+    swipeAutoHideTimer = setTimeout(() => {
+      closeAllSwipeActions();
+      swipeActiveEl = null;
     }, 3000);
+  } else {
+    // Snap back
+    swipeActiveEl.style.transform = '';
+    swipeActiveEl.classList.remove('swiped');
+    swipeActiveEl = null;
   }
-  swipingCard = null;
-  touchStartX = 0;
 }, { passive: true });
+
+// ============ SWIPE ACTION HANDLERS ============
+async function swipeDeleteTask(taskId) {
+  closeAllSwipeActions();
+  if (!confirm('このタスクを削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`tasks/${taskId}`).remove();
+    toast('タスクを削除しました');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeChangeTopicStatus(topicId, newStatus) {
+  closeAllSwipeActions();
+  try {
+    await db.ref(`planning_topics/${topicId}`).update({
+      status: newStatus,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    });
+    toast(`→ ${newStatus}`);
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeDeleteTopic(topicId) {
+  closeAllSwipeActions();
+  if (!confirm('この検討事項を削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`planning_topics/${topicId}`).remove();
+    toast('検討事項を削除しました');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeDeleteDecision(decisionId) {
+  closeAllSwipeActions();
+  if (!confirm('この決定事項を削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`decisions/${decisionId}`).remove();
+    toast('決定事項を削除しました');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeChangeRiskStatus(riskId, newStatus) {
+  closeAllSwipeActions();
+  try {
+    await db.ref(`risks_issues/${riskId}`).update({
+      status: newStatus,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    });
+    toast(`→ ${newStatus}`);
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeDeleteRisk(riskId) {
+  closeAllSwipeActions();
+  if (!confirm('このリスク/課題を削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`risks_issues/${riskId}`).remove();
+    toast('リスク/課題を削除しました');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeChangeFeedbackStatus(fbId, newStatus) {
+  closeAllSwipeActions();
+  try {
+    await db.ref(`feedback_logs/${fbId}`).update({
+      action_status: newStatus,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    });
+    toast(`→ ${newStatus}`);
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function swipeDeleteFeedback(fbId) {
+  closeAllSwipeActions();
+  if (!confirm('このフィードバックを削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`feedback_logs/${fbId}`).remove();
+    toast('フィードバックを削除しました');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
 
 // ============ UI HELPERS ============
 function openModal(id) {
