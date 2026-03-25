@@ -230,8 +230,17 @@ async function handleSlackEvent(request, env) {
 
   const { reaction, user: reactUser, item } = body.event;
 
-  // Ignore reactions from bots (prevents infinite loop from our own ✅)
-  if (body.event.user === body.authorizations?.[0]?.user_id) return json({ ok: true });
+  // Ignore reactions from bots (prevents infinite loop)
+  // Check 1: authorizations-based check
+  if (reactUser === body.authorizations?.[0]?.user_id) return json({ ok: true });
+  // Check 2: call auth.test to get our own bot user ID
+  try {
+    const authTest = await fetch('https://slack.com/api/auth.test', {
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+    });
+    const authData = await authTest.json();
+    if (authData.ok && reactUser === authData.user_id) return json({ ok: true });
+  } catch (e) { /* continue */ }
 
   const mapping = REACTION_MAP[reaction];
   if (!mapping) return json({ ok: true }); // Not a mapped reaction
@@ -425,7 +434,7 @@ Respond in JSON only (no markdown, no explanation):
     await fetch('https://slack.com/api/reactions.add', {
       method: 'POST',
       headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ channel, timestamp: item.ts, name: 'white_check_mark' }),
+      body: JSON.stringify({ channel, timestamp: item.ts, name: 'ballot_box_with_check' }),
     });
 
     // Reply in Slack thread
