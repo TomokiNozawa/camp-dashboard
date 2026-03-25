@@ -229,6 +229,10 @@ async function handleSlackEvent(request, env) {
   if (body.event?.type !== 'reaction_added') return json({ ok: true });
 
   const { reaction, user: reactUser, item } = body.event;
+
+  // Ignore reactions from bots (prevents infinite loop from our own ✅)
+  if (body.event.user === body.authorizations?.[0]?.user_id) return json({ ok: true });
+
   const mapping = REACTION_MAP[reaction];
   if (!mapping) return json({ ok: true }); // Not a mapped reaction
 
