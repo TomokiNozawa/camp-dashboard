@@ -3731,7 +3731,7 @@ function renderDecisions() {
           <span class="decision-number">${num}</span>
           <span class="status-badge s-${escHtml(status)}">${escHtml(status)}</span>
         </div>
-        <div class="decision-title">${escHtml(d.title)}</div>
+        <div class="decision-title">${d.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(d.title)}</div>
         ${d.content ? `<div class="decision-content">${escHtml(d.content)}</div>` : ''}
         <div class="decision-meta">
           ${author ? `<span class="decision-author">${author.avatar ? `<img src="${escHtml(author.avatar)}" alt="">` : ''}${escHtml(author.name)}</span>` : ''}
@@ -4252,7 +4252,7 @@ function renderRisks() {
     return `
       <div class="risk-card${isHighImpact ? ' high-impact' : ''}" onclick="openRiskEditModal('${r.id}')">
         <div class="risk-header">
-          <span class="risk-title">${escHtml(r.title)}</span>
+          <span class="risk-title">${r.source === 'slack' ? '<span title="Slack\u304b\u3089\u767b\u9332" style="font-size:12px;margin-right:3px">\uD83D\uDCAC</span>' : ''}${escHtml(r.title)}</span>
           <span class="risk-type-badge rt-${escHtml(r.type || 'risk')}">${typeLabel}</span>
           <span class="impact-badge imp-${escHtml(r.impact || 'medium')}">${impactLabels[r.impact] || '中'}</span>
           <span class="risk-status-badge rs-${escHtml(r.status || '未対応')}">${escHtml(r.status || '未対応')}</span>
@@ -4881,7 +4881,7 @@ function renderColumn(bodyId, countId, items) {
                 <span class="task-assignee-name">${escHtml(assignee.name)}</span>` :
                 `<span class="task-assignee-name" style="color:var(--text-muted)">未割り当て</span>`}
             </div>
-            <span class="task-date">${dueStr ? `<span style="${isOverdue ? 'color:var(--accent-red)' : ''}">〆${dueStr}</span> · ` : ''}作成${dateStr}</span>
+            <span class="task-date">${task.slack_link ? `<a href="${escHtml(task.slack_link)}" target="_blank" onclick="event.stopPropagation()" style="color:var(--accent-blue);text-decoration:none;margin-right:4px" title="Slack\u3067\u898b\u308b">\u{1F517}</a>` : ''}${dueStr ? `<span style="${isOverdue ? 'color:var(--accent-red)' : ''}">〆${dueStr}</span> · ` : ''}作成${dateStr}</span>
           </div>
         </div>
       </div>`;
