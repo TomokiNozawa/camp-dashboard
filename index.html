@@ -2004,13 +2004,13 @@ html, body {
       <span class="header-title">Camp Dashboard</span>
     </div>
     <div class="header-right">
-      <button class="btn-shortcut-help" onclick="toggleShortcutHelp()" title="キーボードショートカット">?</button>
       <div class="header-user" style="position:relative;cursor:pointer" onclick="toggleUserMenu()">
         <span class="header-user-name" id="headerUserName"></span>
         <img class="header-avatar" id="headerAvatar" alt="">
         <div class="user-menu" id="userMenu">
           <button class="user-menu-item" id="themeMenuItem" onclick="event.stopPropagation(); toggleTheme()">☀ ライトモード</button>
           <button class="user-menu-item" onclick="event.stopPropagation(); toggleMembers(); toggleUserMenu()">👥 メンバー一覧</button>
+          <button class="user-menu-item" onclick="event.stopPropagation(); toggleUserMenu(); toggleShortcutHelp()">⌨ ショートカット</button>
           <div style="border-top:1px solid var(--border);margin:4px 0"></div>
           <button class="user-menu-item" onclick="event.stopPropagation(); logout()">⏻ ログアウト</button>
         </div>
