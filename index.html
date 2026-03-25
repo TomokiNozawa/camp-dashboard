@@ -1705,6 +1705,8 @@ html, body {
 }
 .btn-danger:hover { opacity: 0.9; }
 
+.modal-footer .btn-danger { margin-right: auto; }
+
 /* ============ MEMBERS PANEL ============ */
 .members-panel {
   display: none;
@@ -2347,6 +2349,7 @@ html, body {
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger" id="topicDeleteBtn" style="display:none;" onclick="deleteTopic()">削除</button>
       <button class="btn btn-secondary" onclick="closeModal('topicModal')">キャンセル</button>
       <button class="btn btn-primary" id="topicSubmitBtn" onclick="submitTopic()">追加</button>
     </div>
@@ -2411,6 +2414,7 @@ html, body {
       </div>
     </div>
     <div class="modal-footer">
+      <button class="btn btn-danger" id="decisionDeleteBtn" style="display:none;" onclick="deleteDecision()">削除</button>
       <button class="btn btn-secondary" onclick="closeModal('decisionModal')">キャンセル</button>
       <button class="btn btn-primary" id="decisionSubmitBtn" onclick="submitDecision()">記録</button>
     </div>
@@ -2864,6 +2868,24 @@ const FIREBASE_CONFIG = {
 };
 
 const AUTH_WORKER_URL = "https://camp-auth.tomoki-nozawa.workers.dev";
+
+// ============ DATE HELPERS ============
+function formatDateTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const jst = new Date(d.getTime() + (9 * 60 - d.getTimezoneOffset()) * 60000);
+  const m = jst.getMonth() + 1;
+  const day = jst.getDate();
+  const h = String(jst.getHours()).padStart(2, '0');
+  const min = String(jst.getMinutes()).padStart(2, '0');
+  return `${m}/${day} ${h}:${min}`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00+09:00');
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
 
 // ============ STATE ============
 let db = null;
@@ -3397,7 +3419,7 @@ function renderOverview() {
         _badgeBg: 'rgba(90,173,255,0.2)',
         _badgeColor: 'var(--accent-blue)',
         title: m.title,
-        desc: m.actual_date ? `完了: ${m.actual_date}` : '完了',
+        desc: m.actual_date ? `完了: ${formatDate(m.actual_date)}` : '完了',
         author: assignee,
       });
     }
@@ -3414,9 +3436,7 @@ function renderOverview() {
   }
 
   feed.innerHTML = top15.map(item => {
-    const dateStr = item._ts ? new Date(item._ts).toLocaleDateString('ja-JP', {
-      month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'
-    }) : '';
+    const dateStr = item._ts ? formatDateTime(item._ts) : '';
     return `
       <div class="activity-item" style="border-left:3px solid ${item._borderColor};padding-left:11px;">
         <div class="activity-icon" style="background:${item._iconBg};color:${item._iconColor};">${item._icon}</div>
@@ -3474,7 +3494,7 @@ function renderTopics() {
     const priorityColor = t.priority === 'high' ? 'var(--priority-high)' :
                           t.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
     const assignee = t.assignee_id && users[t.assignee_id] ? users[t.assignee_id] : null;
-    const dueStr = t.due_date ? new Date(t.due_date + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+    const dueStr = t.due_date ? formatDate(t.due_date) : '';
 
     return `
       <div class="topic-card" onclick="openTopicDetail('${t.id}')">
@@ -3497,6 +3517,7 @@ function openTopicCreateModal() {
   editingTopicId = null;
   document.getElementById('topicModalTitle').textContent = '検討事項を追加';
   document.getElementById('topicSubmitBtn').textContent = '追加';
+  document.getElementById('topicDeleteBtn').style.display = 'none';
   document.getElementById('topicTitleInput').value = '';
   document.getElementById('topicContextInput').value = '';
   document.getElementById('topicCategoryInput').value = '対象者定義';
@@ -3515,6 +3536,7 @@ function openTopicEditModal(topicId) {
   editingTopicId = topicId;
   document.getElementById('topicModalTitle').textContent = '検討事項を編集';
   document.getElementById('topicSubmitBtn').textContent = '保存';
+  document.getElementById('topicDeleteBtn').style.display = '';
   document.getElementById('topicTitleInput').value = topic.title || '';
   document.getElementById('topicContextInput').value = topic.context || '';
   document.getElementById('topicCategoryInput').value = topic.category || '対象者定義';
@@ -3570,6 +3592,16 @@ async function submitTopic() {
   }
 }
 
+async function deleteTopic() {
+  if (!editingTopicId) return;
+  if (!confirm('この検討事項を削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`planning_topics/${editingTopicId}`).remove();
+    toast('検討事項を削除しました');
+    closeModal('topicModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
 function openTopicDetail(topicId) {
   viewingTopicId = topicId;
   const topic = planningTopics[topicId];
@@ -3577,7 +3609,7 @@ function openTopicDetail(topicId) {
 
   const assignee = topic.assignee_id && users[topic.assignee_id] ? users[topic.assignee_id] : null;
   const creator = topic.created_by && users[topic.created_by] ? users[topic.created_by] : null;
-  const createdStr = topic.created_at ? new Date(topic.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+  const createdStr = topic.created_at ? formatDateTime(topic.created_at) : '';
   const dueStr = topic.due_date || '';
   const priorityLabel = topic.priority === 'high' ? '高' : topic.priority === 'low' ? '低' : '中';
   const priorityColor = topic.priority === 'high' ? 'var(--priority-high)' : topic.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
@@ -3634,7 +3666,7 @@ function renderTopicComments(topicId) {
 
   commentList.innerHTML = comments.map(c => {
     const author = c.author_id && users[c.author_id] ? users[c.author_id] : null;
-    const timeStr = c.created_at ? new Date(c.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+    const timeStr = c.created_at ? formatDateTime(c.created_at) : '';
     return `
       <div class="comment-item">
         ${author && author.avatar ? `<img class="comment-avatar" src="${escHtml(author.avatar)}" alt="">` : '<div class="comment-avatar" style="background:var(--bg-card)"></div>'}
@@ -3688,8 +3720,8 @@ function renderDecisions() {
   list.innerHTML = items.map((d, idx) => {
     const num = 'D-' + String(items.length - idx).padStart(3, '0');
     const author = d.decided_by && users[d.decided_by] ? users[d.decided_by] : null;
-    const dateStr = d.decided_at ? new Date(d.decided_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) :
-                    d.created_at ? new Date(d.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+    const dateStr = d.decided_at ? formatDateTime(d.decided_at) :
+                    d.created_at ? formatDateTime(d.created_at) : '';
     const topicTitle = d.topic_id && planningTopics[d.topic_id] ? planningTopics[d.topic_id].title : '';
     const status = d.status || '有効';
 
@@ -3714,6 +3746,7 @@ function openDecisionCreateModal(topicId) {
   editingDecisionId = null;
   document.getElementById('decisionModalTitle').textContent = '決定を記録';
   document.getElementById('decisionSubmitBtn').textContent = '記録';
+  document.getElementById('decisionDeleteBtn').style.display = 'none';
   document.getElementById('decisionTitleInput').value = '';
   document.getElementById('decisionContentInput').value = '';
   document.getElementById('decisionRationaleInput').value = '';
@@ -3731,6 +3764,7 @@ function openDecisionEditModal(decisionId) {
   editingDecisionId = decisionId;
   document.getElementById('decisionModalTitle').textContent = '決定を編集';
   document.getElementById('decisionSubmitBtn').textContent = '保存';
+  document.getElementById('decisionDeleteBtn').style.display = '';
   document.getElementById('decisionTitleInput').value = dec.title || '';
   document.getElementById('decisionContentInput').value = dec.content || '';
   document.getElementById('decisionRationaleInput').value = dec.rationale || '';
@@ -3800,13 +3834,23 @@ async function submitDecision() {
   }
 }
 
+async function deleteDecision() {
+  if (!editingDecisionId) return;
+  if (!confirm('この決定事項を削除しますか？この操作は取り消せません。')) return;
+  try {
+    await db.ref(`decisions/${editingDecisionId}`).remove();
+    toast('決定事項を削除しました');
+    closeModal('decisionModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
 function openDecisionDetail(decisionId) {
   viewingDecisionId = decisionId;
   const dec = decisions[decisionId];
   if (!dec) return;
 
   const author = dec.decided_by && users[dec.decided_by] ? users[dec.decided_by] : null;
-  const dateStr = dec.decided_at ? new Date(dec.decided_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+  const dateStr = dec.decided_at ? formatDateTime(dec.decided_at) : '';
   const status = dec.status || '有効';
   const topicTitle = dec.topic_id && planningTopics[dec.topic_id] ? planningTopics[dec.topic_id].title : '';
 
@@ -3918,8 +3962,8 @@ function renderMilestones() {
   list.innerHTML = items.map(m => {
     const isOverdue = m.planned_date && m.planned_date < today && m.status !== '完了' && m.status !== 'スキップ';
     const assignee = m.assignee_id && users[m.assignee_id] ? users[m.assignee_id] : null;
-    const plannedStr = m.planned_date || '';
-    const actualStr = m.actual_date || '';
+    const plannedStr = m.planned_date ? formatDate(m.planned_date) : '';
+    const actualStr = m.actual_date ? formatDate(m.actual_date) : '';
     const phaseLabel = { phase0: 'P0 企画', phase1: 'P1 設計', phase2: 'P2 開発', phase3: 'P3 検証', phase4: 'P4 展開' }[m.phase] || m.phase || '';
 
     return `
@@ -4014,6 +4058,7 @@ async function submitMilestone() {
 
 async function deleteMilestone() {
   if (!editingMilestoneId) return;
+  if (!confirm('このマイルストーンを削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`milestones/${editingMilestoneId}`).remove();
     toast('マイルストーンを削除しました');
@@ -4045,7 +4090,7 @@ function renderDeliverables() {
   list.innerHTML = items.map(d => {
     const icon = typeIcons[d.type] || '📁';
     const assignee = d.assignee_id && users[d.assignee_id] ? users[d.assignee_id] : null;
-    const dueStr = d.due_date || '';
+    const dueStr = d.due_date ? formatDate(d.due_date) : '';
 
     return `
       <div class="deliverable-card" onclick="openDeliverableEditModal('${d.id}')">
@@ -4140,6 +4185,7 @@ async function submitDeliverable() {
 
 async function deleteDeliverable() {
   if (!editingDeliverableId) return;
+  if (!confirm('この成果物を削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`deliverables/${editingDeliverableId}`).remove();
     toast('成果物を削除しました');
@@ -4201,7 +4247,7 @@ function renderRisks() {
     const isHighImpact = r.impact === 'high' && r.status !== '解決済み';
     const assignee = r.assignee_id && users[r.assignee_id] ? users[r.assignee_id] : null;
     const typeLabel = r.type === 'risk' ? 'リスク' : '課題';
-    const dueStr = r.due_date || '';
+    const dueStr = r.due_date ? formatDate(r.due_date) : '';
 
     return `
       <div class="risk-card${isHighImpact ? ' high-impact' : ''}" onclick="openRiskEditModal('${r.id}')">
@@ -4308,6 +4354,7 @@ async function submitRisk() {
 
 async function deleteRisk() {
   if (!editingRiskId) return;
+  if (!confirm('このリスク/課題を削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`risks_issues/${editingRiskId}`).remove();
     toast('リスク/課題を削除しました');
@@ -4348,7 +4395,7 @@ function renderStakeholders() {
         ${s.responsibilities ? `<div class="stakeholder-detail">${escHtml(s.responsibilities)}</div>` : ''}
         <div class="stakeholder-meta">
           ${s.contact ? `<span>${escHtml(s.contact)}</span>` : ''}
-          ${s.last_contacted ? `<span>最終連絡: ${s.last_contacted}</span>` : ''}
+          ${s.last_contacted ? `<span>最終連絡: ${formatDate(s.last_contacted)}</span>` : ''}
         </div>
       </div>`;
   }).join('');
@@ -4416,6 +4463,7 @@ async function submitStakeholder() {
 
 async function deleteStakeholder() {
   if (!editingStakeholderId) return;
+  if (!confirm('この関係者を削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`stakeholders/${editingStakeholderId}`).remove();
     toast('関係者を削除しました');
@@ -4463,7 +4511,7 @@ function renderFeedback() {
 
   list.innerHTML = items.map(f => {
     const creator = f.created_by && users[f.created_by] ? users[f.created_by] : null;
-    const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+    const dateStr = f.created_at ? formatDateTime(f.created_at) : '';
 
     return `
       <div class="feedback-card" onclick="openFeedbackDetail('${f.id}')">
@@ -4547,6 +4595,7 @@ async function submitFeedback() {
 
 async function deleteFeedback() {
   if (!editingFeedbackId) return;
+  if (!confirm('このフィードバックを削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`feedback_logs/${editingFeedbackId}`).remove();
     toast('フィードバックを削除しました');
@@ -4560,7 +4609,7 @@ function openFeedbackDetail(id) {
   if (!f) return;
 
   const creator = f.created_by && users[f.created_by] ? users[f.created_by] : null;
-  const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+  const dateStr = f.created_at ? formatDateTime(f.created_at) : '';
 
   const body = document.getElementById('feedbackDetailBody');
   body.innerHTML = `
@@ -4747,6 +4796,7 @@ async function submitBudget() {
 
 async function deleteBudget() {
   if (!editingBudgetId) return;
+  if (!confirm('この予算項目を削除しますか？この操作は取り消せません。')) return;
   try {
     await db.ref(`budgets/${editingBudgetId}`).remove();
     toast('予算項目を削除しました');
@@ -4804,8 +4854,8 @@ function renderColumn(bodyId, countId, items) {
     const priorityColor = task.priority === 'high' ? 'var(--priority-high)' :
                           task.priority === 'low' ? 'var(--priority-low)' : 'var(--priority-medium)';
     const assignee = task.assignee_id && users[task.assignee_id] ? users[task.assignee_id] : null;
-    const dateStr = task.created_at ? new Date(task.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
-    const dueStr = task.due_date ? new Date(task.due_date + 'T00:00:00').toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+    const dateStr = task.created_at ? formatDateTime(task.created_at) : '';
+    const dueStr = task.due_date ? formatDate(task.due_date) : '';
     const isOverdue = task.due_date && task.status !== 'done' && new Date(task.due_date + 'T23:59:59') < new Date();
     const nextStatus = task.status === 'todo' ? 'doing' : task.status === 'doing' ? 'done' : 'todo';
     const nextLabel = nextStatus === 'doing' ? '▶' : nextStatus === 'done' ? '✓' : '↩';
@@ -4882,7 +4932,7 @@ function renderMembers() {
   });
   list.innerHTML = entries.map(([uid, u]) => {
     const isOnline = !!onlineUsers[uid];
-    const lastLogin = u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) + ' ' + new Date(u.last_login).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
+    const lastLogin = u.last_login ? formatDateTime(u.last_login) : '';
     return `
       <div class="member-item">
         <div style="position:relative">
