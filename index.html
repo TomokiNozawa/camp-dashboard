@@ -546,18 +546,409 @@ html, body {
   font-size: 14px;
 }
 
-/* ============ TIMELINE PLACEHOLDER ============ */
-.timeline-placeholder {
+/* ============ TIMELINE TAB ============ */
+.timeline-pane { overflow-y: auto; padding: 20px; }
+
+/* Phase Indicator */
+.phase-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  position: relative;
+}
+.phase-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 48px;
+  right: 48px;
+  height: 3px;
+  background: var(--border);
+  z-index: 0;
+}
+.phase-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  height: 100%;
-  color: var(--text-muted);
-  font-size: 15px;
+  gap: 8px;
+  z-index: 1;
+  cursor: pointer;
+  transition: var(--transition);
+  flex: 1;
 }
-.timeline-placeholder-icon { font-size: 48px; opacity: 0.4; }
+.phase-step:hover .phase-circle { transform: scale(1.15); }
+.phase-circle {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--border);
+  background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+.phase-step.completed .phase-circle {
+  border-color: var(--accent-green);
+  background: var(--accent-green);
+  color: #fff;
+}
+.phase-step.current .phase-circle {
+  border-color: var(--accent-blue);
+  background: var(--accent-blue);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(90,173,255,0.25);
+}
+.phase-step.future .phase-circle {
+  border-color: var(--border);
+  background: var(--bg-primary);
+  color: var(--text-muted);
+}
+.phase-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+.phase-step.current .phase-label { color: var(--accent-blue); font-weight: 600; }
+.phase-step.completed .phase-label { color: var(--accent-green); }
+
+/* Milestones Section */
+.timeline-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.milestones-list, .deliverables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.milestone-card, .deliverable-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.milestone-card:hover, .deliverable-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-light);
+}
+.milestone-card.overdue { border-left: 3px solid var(--accent-red); }
+
+.milestone-header, .deliverable-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.milestone-title, .deliverable-title {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.milestone-meta, .deliverable-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Milestone/Deliverable status badges */
+.ms-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.ms-badge.ms-未開始 { background: rgba(139,149,165,0.2); color: var(--text-secondary); }
+.ms-badge.ms-進行中 { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.ms-badge.ms-完了 { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+.ms-badge.ms-遅延 { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+.ms-badge.ms-スキップ { background: rgba(139,149,165,0.15); color: var(--text-muted); }
+
+.dl-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.dl-badge.dl-未着手 { background: rgba(139,149,165,0.2); color: var(--text-secondary); }
+.dl-badge.dl-作成中 { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.dl-badge.dl-レビュー中 { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.dl-badge.dl-承認済み { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+.dl-badge.dl-要修正 { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+.dl-type-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(184,140,255,0.15);
+  color: var(--accent-purple);
+  white-space: nowrap;
+}
+
+.deliverable-url {
+  font-size: 11px;
+  color: var(--accent-blue);
+  text-decoration: none;
+}
+.deliverable-url:hover { text-decoration: underline; }
+
+.phase-badge {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(90,173,255,0.12);
+  color: var(--accent-blue);
+  white-space: nowrap;
+}
+
+/* ============ RECORDS SUB-TABS ============ */
+.records-sub-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+.records-sub-tab {
+  position: relative;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.records-sub-tab:hover { color: var(--text-primary); }
+.records-sub-tab.active {
+  color: var(--accent-blue);
+  font-weight: 600;
+}
+.records-sub-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 8px; right: 8px;
+  height: 2px;
+  background: var(--accent-blue);
+  border-radius: 2px 2px 0 0;
+}
+.records-sub-pane { display: none; }
+.records-sub-pane.active { display: block; }
+
+/* ============ RISKS/ISSUES ============ */
+.risk-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.risk-card:hover { background: var(--bg-card-hover); }
+.risk-card.high-impact { border-left: 3px solid var(--accent-red); }
+
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.risk-title {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.risk-type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.risk-type-badge.rt-risk { background: rgba(240,136,62,0.2); color: var(--accent-orange); }
+.risk-type-badge.rt-issue { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+.impact-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.impact-badge.imp-high { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+.impact-badge.imp-medium { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.impact-badge.imp-low { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+
+.risk-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.risk-status-badge.rs-未対応 { background: rgba(139,149,165,0.2); color: var(--text-secondary); }
+.risk-status-badge.rs-対応中 { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.risk-status-badge.rs-監視中 { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.risk-status-badge.rs-解決済み { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+
+.risk-mitigation {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.risk-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============ STAKEHOLDERS ============ */
+.stakeholders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  padding: 12px 20px;
+}
+
+.stakeholder-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stakeholder-card:hover { background: var(--bg-card-hover); }
+
+.stakeholder-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.stakeholder-role-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: inline-block;
+}
+.stakeholder-role-badge.sr-オーナー { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+.stakeholder-role-badge.sr-承認者 { background: rgba(240,136,62,0.2); color: var(--accent-orange); }
+.stakeholder-role-badge.sr-実行者 { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.stakeholder-role-badge.sr-アドバイザー { background: rgba(184,140,255,0.2); color: var(--accent-purple); }
+.stakeholder-role-badge.sr-対象者代表 { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+
+.involvement-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.involvement-badge.inv-高 { background: rgba(248,81,73,0.15); color: var(--accent-red); }
+.involvement-badge.inv-中 { background: rgba(232,184,64,0.15); color: var(--accent-yellow); }
+.involvement-badge.inv-低 { background: rgba(139,149,165,0.15); color: var(--text-secondary); }
+
+.stakeholder-detail {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.stakeholder-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============ OVERVIEW ALERTS ============ */
+.overview-alerts {
+  margin-top: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.overview-alerts-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--accent-yellow);
+}
+.overview-alert-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+}
+.overview-alert-count {
+  font-weight: 700;
+  color: var(--accent-red);
+  min-width: 24px;
+  text-align: right;
+}
+.overview-alert-count.zero { color: var(--accent-green); }
+
+.timeline-empty, .risks-empty, .stakeholders-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px 20px;
+  font-size: 13px;
+}
 
 /* ============ COMMENT THREAD ============ */
 .comment-thread {
@@ -1192,6 +1583,15 @@ html, body {
 
   .topics-list, .records-list { padding: 12px 16px; }
   .overview-pane { padding: 16px; }
+  .timeline-pane { padding: 16px; }
+
+  .phase-indicator { padding: 16px 8px; flex-wrap: wrap; gap: 4px; }
+  .phase-indicator::before { display: none; }
+  .phase-label { font-size: 10px; }
+  .phase-circle { width: 28px; height: 28px; font-size: 11px; }
+
+  .stakeholders-grid { grid-template-columns: 1fr; padding: 12px 16px; }
+  .records-sub-tabs { padding: 0 16px; }
 }
 
 /* ============ LOADING ============ */
@@ -1282,14 +1682,18 @@ html, body {
         <div class="summary-card-sub">件</div>
       </div>
       <div class="summary-card">
-        <div class="summary-card-label">直近の決定</div>
-        <div class="summary-card-value" id="overviewRecentDecisions">0</div>
-        <div class="summary-card-sub">件（7日間）</div>
+        <div class="summary-card-label">高リスク/課題</div>
+        <div class="summary-card-value" id="overviewHighRisks">0</div>
+        <div class="summary-card-sub">件（未対応+対応中）</div>
       </div>
     </div>
     <div class="activity-feed-title">最近のアクティビティ</div>
     <div class="activity-feed" id="activityFeed">
       <div class="activity-empty">まだアクティビティはありません</div>
+    </div>
+    <div class="overview-alerts" id="overviewAlerts" style="display:none;">
+      <div class="overview-alerts-title">&#9888; 注意事項</div>
+      <div id="overviewAlertItems"></div>
     </div>
   </div>
 
@@ -1412,21 +1816,81 @@ html, body {
   </div>
 
   <!-- ===== TIMELINE TAB ===== -->
-  <div class="tab-pane" id="paneTimeline">
-    <div class="timeline-placeholder">
-      <div class="timeline-placeholder-icon">📅</div>
-      <div>Phase 2 で実装予定</div>
+  <div class="tab-pane timeline-pane" id="paneTimeline">
+    <!-- Phase Indicator -->
+    <div class="phase-indicator" id="phaseIndicator"></div>
+
+    <!-- Milestones -->
+    <div class="timeline-section-title">
+      <span>マイルストーン</span>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openMilestoneCreateModal()">+ 追加</button>
+    </div>
+    <div class="milestones-list" id="milestonesList">
+      <div class="timeline-empty">マイルストーンはまだありません</div>
+    </div>
+
+    <!-- Deliverables -->
+    <div class="timeline-section-title">
+      <span>成果物</span>
+      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openDeliverableCreateModal()">+ 追加</button>
+    </div>
+    <div class="deliverables-list" id="deliverablesList">
+      <div class="timeline-empty">成果物はまだありません</div>
     </div>
   </div>
 
   <!-- ===== RECORDS TAB ===== -->
   <div class="tab-pane records-pane" id="paneRecords">
-    <div class="records-toolbar">
-      <span style="font-size:14px;font-weight:600;">決定事項</span>
-      <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openDecisionCreateModal()">+ 決定を記録</button>
+    <!-- Sub-tabs -->
+    <div class="records-sub-tabs">
+      <button class="records-sub-tab active" data-records-tab="decisions" onclick="switchRecordsSubTab('decisions', this)">意思決定</button>
+      <button class="records-sub-tab" data-records-tab="risks" onclick="switchRecordsSubTab('risks', this)">リスク/課題</button>
+      <button class="records-sub-tab" data-records-tab="stakeholders" onclick="switchRecordsSubTab('stakeholders', this)">関係者</button>
     </div>
-    <div class="records-list" id="decisionsList">
-      <div class="records-empty">決定事項はまだありません</div>
+
+    <!-- Decisions sub-pane -->
+    <div class="records-sub-pane active" id="subPaneDecisions">
+      <div class="records-toolbar">
+        <span style="font-size:14px;font-weight:600;">決定事項</span>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openDecisionCreateModal()">+ 決定を記録</button>
+      </div>
+      <div class="records-list" id="decisionsList">
+        <div class="records-empty">決定事項はまだありません</div>
+      </div>
+    </div>
+
+    <!-- Risks/Issues sub-pane -->
+    <div class="records-sub-pane" id="subPaneRisks">
+      <div class="records-toolbar">
+        <span style="font-size:14px;font-weight:600;">リスク/課題</span>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openRiskCreateModal()">+ 追加</button>
+      </div>
+      <div class="topics-toolbar" id="riskFilterBar">
+        <span class="topics-toolbar-label">種別:</span>
+        <button class="filter-chip active" data-risk-type="all" onclick="filterRiskType('all', this)">全て</button>
+        <button class="filter-chip" data-risk-type="risk" onclick="filterRiskType('risk', this)">リスク</button>
+        <button class="filter-chip" data-risk-type="issue" onclick="filterRiskType('issue', this)">課題</button>
+        <span class="topics-toolbar-label" style="margin-left:8px;">状態:</span>
+        <button class="filter-chip active" data-risk-status="all" onclick="filterRiskStatus('all', this)">全て</button>
+        <button class="filter-chip" data-risk-status="未対応" onclick="filterRiskStatus('未対応', this)">未対応</button>
+        <button class="filter-chip" data-risk-status="対応中" onclick="filterRiskStatus('対応中', this)">対応中</button>
+        <button class="filter-chip" data-risk-status="監視中" onclick="filterRiskStatus('監視中', this)">監視中</button>
+        <button class="filter-chip" data-risk-status="解決済み" onclick="filterRiskStatus('解決済み', this)">解決済み</button>
+      </div>
+      <div class="records-list" id="risksList">
+        <div class="risks-empty">リスク/課題はまだありません</div>
+      </div>
+    </div>
+
+    <!-- Stakeholders sub-pane -->
+    <div class="records-sub-pane" id="subPaneStakeholders">
+      <div class="records-toolbar">
+        <span style="font-size:14px;font-weight:600;">関係者</span>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openStakeholderCreateModal()">+ 追加</button>
+      </div>
+      <div class="stakeholders-grid" id="stakeholdersList">
+        <div class="stakeholders-empty">関係者はまだ登録されていません</div>
+      </div>
     </div>
   </div>
 
@@ -1653,6 +2117,279 @@ html, body {
   </div>
 </div>
 
+<!-- ===== MILESTONE CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="milestoneModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="milestoneModalTitle">マイルストーンを追加</span>
+      <button class="modal-close" onclick="closeModal('milestoneModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="milestoneTitleInput" placeholder="マイルストーン名" maxlength="200">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">フェーズ</label>
+          <select class="form-select" id="milestonePhaseInput">
+            <option value="phase0">Phase 0 企画立案</option>
+            <option value="phase1">Phase 1 設計</option>
+            <option value="phase2">Phase 2 開発</option>
+            <option value="phase3">Phase 3 検証</option>
+            <option value="phase4">Phase 4 展開</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="milestoneStatusInput">
+            <option value="未開始">未開始</option>
+            <option value="進行中">進行中</option>
+            <option value="完了">完了</option>
+            <option value="遅延">遅延</option>
+            <option value="スキップ">スキップ</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">予定日</label>
+          <input class="form-input" id="milestonePlannedDateInput" type="date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">実績日</label>
+          <input class="form-input" id="milestoneActualDateInput" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者</label>
+        <select class="form-select" id="milestoneAssigneeInput">
+          <option value="">未割り当て</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">依存関係</label>
+        <input class="form-input" id="milestoneDepsInput" placeholder="依存するマイルストーン（任意）">
+      </div>
+      <div class="form-group">
+        <label class="form-label">成果物ID</label>
+        <input class="form-input" id="milestoneDeliverablesInput" placeholder="関連する成果物ID（任意）">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('milestoneModal')">キャンセル</button>
+      <button class="btn btn-danger" id="milestoneDeleteBtn" style="display:none;" onclick="deleteMilestone()">削除</button>
+      <button class="btn btn-primary" id="milestoneSubmitBtn" onclick="submitMilestone()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELIVERABLE CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="deliverableModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="deliverableModalTitle">成果物を追加</span>
+      <button class="modal-close" onclick="closeModal('deliverableModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="deliverableTitleInput" placeholder="成果物名" maxlength="200">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">種類</label>
+          <select class="form-select" id="deliverableTypeInput">
+            <option value="企画書">企画書</option>
+            <option value="カリキュラム">カリキュラム</option>
+            <option value="教材・スライド">教材・スライド</option>
+            <option value="演習ファイル">演習ファイル</option>
+            <option value="報告書">報告書</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="deliverableStatusInput">
+            <option value="未着手">未着手</option>
+            <option value="作成中">作成中</option>
+            <option value="レビュー中">レビュー中</option>
+            <option value="承認済み">承認済み</option>
+            <option value="要修正">要修正</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="deliverableAssigneeInput">
+            <option value="">未割り当て</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">期日</label>
+          <input class="form-input" id="deliverableDueInput" type="date">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">バージョン</label>
+          <input class="form-input" id="deliverableVersionInput" placeholder="例: v1.0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">関連マイルストーンID</label>
+          <input class="form-input" id="deliverableMilestoneInput" placeholder="任意">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL</label>
+        <input class="form-input" id="deliverableUrlInput" placeholder="https://..." type="url">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('deliverableModal')">キャンセル</button>
+      <button class="btn btn-danger" id="deliverableDeleteBtn" style="display:none;" onclick="deleteDeliverable()">削除</button>
+      <button class="btn btn-primary" id="deliverableSubmitBtn" onclick="submitDeliverable()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RISK/ISSUE CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="riskModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="riskModalTitle">リスク/課題を追加</span>
+      <button class="modal-close" onclick="closeModal('riskModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="riskTitleInput" placeholder="リスク/課題のタイトル" maxlength="200">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">種別</label>
+          <select class="form-select" id="riskTypeInput" onchange="toggleLikelihood()">
+            <option value="risk">リスク</option>
+            <option value="issue">課題</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">影響度</label>
+          <select class="form-select" id="riskImpactInput">
+            <option value="high">高</option>
+            <option value="medium" selected>中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" id="likelihoodGroup">
+          <label class="form-label">発生確率</label>
+          <select class="form-select" id="riskLikelihoodInput">
+            <option value="high">高</option>
+            <option value="medium" selected>中</option>
+            <option value="low">低</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select class="form-select" id="riskStatusInput">
+            <option value="未対応">未対応</option>
+            <option value="対応中">対応中</option>
+            <option value="監視中">監視中</option>
+            <option value="解決済み">解決済み</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">対策・軽減策</label>
+        <textarea class="form-textarea" id="riskMitigationInput" placeholder="対策の内容" rows="3"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="riskAssigneeInput">
+            <option value="">未割り当て</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">期日</label>
+          <input class="form-input" id="riskDueInput" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">関連領域</label>
+        <input class="form-input" id="riskAreaInput" placeholder="例: カリキュラム, 運営">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('riskModal')">キャンセル</button>
+      <button class="btn btn-danger" id="riskDeleteBtn" style="display:none;" onclick="deleteRisk()">削除</button>
+      <button class="btn btn-primary" id="riskSubmitBtn" onclick="submitRisk()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STAKEHOLDER CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="stakeholderModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="stakeholderModalTitle">関係者を追加</span>
+      <button class="modal-close" onclick="closeModal('stakeholderModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">氏名</label>
+        <input class="form-input" id="stakeholderNameInput" placeholder="氏名" maxlength="100">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">役割</label>
+          <select class="form-select" id="stakeholderRoleInput">
+            <option value="オーナー">オーナー</option>
+            <option value="承認者">承認者</option>
+            <option value="実行者">実行者</option>
+            <option value="アドバイザー">アドバイザー</option>
+            <option value="対象者代表">対象者代表</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">関与度</label>
+          <select class="form-select" id="stakeholderInvolvementInput">
+            <option value="高">高</option>
+            <option value="中" selected>中</option>
+            <option value="低">低</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">組織</label>
+        <input class="form-input" id="stakeholderOrgInput" placeholder="所属組織">
+      </div>
+      <div class="form-group">
+        <label class="form-label">責任範囲</label>
+        <textarea class="form-textarea" id="stakeholderRespInput" placeholder="担当する責任範囲" rows="2"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">連絡先</label>
+          <input class="form-input" id="stakeholderContactInput" placeholder="メール/Slack等">
+        </div>
+        <div class="form-group">
+          <label class="form-label">最終連絡日</label>
+          <input class="form-input" id="stakeholderLastContactInput" type="date">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('stakeholderModal')">キャンセル</button>
+      <button class="btn btn-danger" id="stakeholderDeleteBtn" style="display:none;" onclick="deleteStakeholder()">削除</button>
+      <button class="btn btn-primary" id="stakeholderSubmitBtn" onclick="submitStakeholder()">追加</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== MEMBERS PANEL ===== -->
 <div class="members-panel" id="membersPanel">
   <div class="members-header">
@@ -1691,16 +2428,27 @@ let tasks = {};          // { taskId: taskData }
 let users = {};          // { slackUserId: { name, avatar, last_login } }
 let planningTopics = {}; // { topicId: topicData }
 let decisions = {};      // { decisionId: decisionData }
+let milestones = {};     // { milestoneId: milestoneData }
+let deliverables = {};   // { deliverableId: deliverableData }
+let risksIssues = {};    // { riskId: riskData }
+let stakeholders = {};   // { stakeholderId: stakeholderData }
+let currentPhase = 'phase0';
 let editingTaskId = null;
 let deleteTaskId = null;
 let editingTopicId = null;
 let editingDecisionId = null;
+let editingMilestoneId = null;
+let editingDeliverableId = null;
+let editingRiskId = null;
+let editingStakeholderId = null;
 let viewingTopicId = null;
 let viewingDecisionId = null;
 let currentFilter = { status: 'all', assignee: 'all', priority: 'all' };
 let currentSort = 'created';
 let topicFilter = { category: '全て', status: '全て' };
+let riskFilter = { type: 'all', status: 'all' };
 let activeTab = 'overview';
+let activeRecordsSubTab = 'decisions';
 
 // ============ INIT ============
 firebase.initializeApp(FIREBASE_CONFIG);
@@ -1802,6 +2550,10 @@ function logout() {
   users = {};
   planningTopics = {};
   decisions = {};
+  milestones = {};
+  deliverables = {};
+  risksIssues = {};
+  stakeholders = {};
   showLogin();
 }
 
@@ -1834,6 +2586,11 @@ function showApp() {
   listenUsers();
   listenPlanningTopics();
   listenDecisions();
+  listenMilestones();
+  listenDeliverables();
+  listenRisksIssues();
+  listenStakeholders();
+  listenProjectPhase();
 }
 
 // ============ TAB NAVIGATION ============
@@ -1857,8 +2614,12 @@ function switchTab(tabName, el) {
 function handleFabClick() {
   if (activeTab === 'topics') {
     openTopicCreateModal();
+  } else if (activeTab === 'timeline') {
+    openMilestoneCreateModal();
   } else if (activeTab === 'records') {
-    openDecisionCreateModal();
+    if (activeRecordsSubTab === 'risks') openRiskCreateModal();
+    else if (activeRecordsSubTab === 'stakeholders') openStakeholderCreateModal();
+    else openDecisionCreateModal();
   } else {
     openCreateModal('todo');
   }
@@ -1905,6 +2666,15 @@ function listenDecisions() {
 
 // ============ OVERVIEW ============
 function renderOverview() {
+  // Current phase
+  const phaseLabels = { phase0: 'Phase 0 企画立案', phase1: 'Phase 1 設計', phase2: 'Phase 2 開発', phase3: 'Phase 3 検証', phase4: 'Phase 4 展開' };
+  const phaseEl = document.getElementById('overviewPhase');
+  const phaseSub = phaseEl.parentElement.querySelector('.summary-card-sub');
+  const pLabel = phaseLabels[currentPhase] || 'Phase 0 企画立案';
+  const pParts = pLabel.split(' ');
+  phaseEl.textContent = pParts.slice(0, 2).join(' ');
+  if (phaseSub) phaseSub.textContent = pParts.slice(2).join(' ');
+
   // Open topics count (not decided, not dropped)
   const openTopics = Object.values(planningTopics).filter(t =>
     t.status !== '決定済み' && t.status !== '取り下げ'
@@ -1915,12 +2685,53 @@ function renderOverview() {
   const openTasks = Object.values(tasks).filter(t => t.status !== 'done').length;
   document.getElementById('overviewOpenTasks').textContent = openTasks;
 
-  // Recent decisions (last 7 days)
-  const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const recentDecisions = Object.values(decisions).filter(d =>
-    (d.decided_at || d.created_at || 0) > sevenDaysAgo
-  );
-  document.getElementById('overviewRecentDecisions').textContent = recentDecisions.length;
+  // High-impact risks/issues (未対応 + 対応中 where impact=high)
+  const highRisks = Object.values(risksIssues).filter(r =>
+    r.impact === 'high' && (r.status === '未対応' || r.status === '対応中')
+  ).length;
+  document.getElementById('overviewHighRisks').textContent = highRisks;
+
+  // Alerts section
+  const today = new Date().toISOString().slice(0, 10);
+  const overdueMilestones = Object.values(milestones).filter(m =>
+    m.planned_date && m.planned_date < today && m.status !== '完了' && m.status !== 'スキップ'
+  ).length;
+  const overdueTasks = Object.values(tasks).filter(t =>
+    t.due_date && t.due_date < today && t.status !== 'done'
+  ).length;
+  const highUnresolvedRisks = Object.values(risksIssues).filter(r =>
+    r.impact === 'high' && r.status !== '解決済み'
+  ).length;
+  const reviewDeliverables = Object.values(deliverables).filter(d =>
+    d.status === 'レビュー中'
+  ).length;
+
+  const alertsContainer = document.getElementById('overviewAlerts');
+  const alertItems = document.getElementById('overviewAlertItems');
+  const hasAlerts = overdueMilestones > 0 || overdueTasks > 0 || highUnresolvedRisks > 0 || reviewDeliverables > 0;
+
+  if (hasAlerts) {
+    alertsContainer.style.display = '';
+    alertItems.innerHTML = `
+      <div class="overview-alert-item">
+        <span class="overview-alert-count${overdueMilestones === 0 ? ' zero' : ''}">${overdueMilestones}</span>
+        <span>期限超過マイルストーン</span>
+      </div>
+      <div class="overview-alert-item">
+        <span class="overview-alert-count${overdueTasks === 0 ? ' zero' : ''}">${overdueTasks}</span>
+        <span>期限超過タスク</span>
+      </div>
+      <div class="overview-alert-item">
+        <span class="overview-alert-count${highUnresolvedRisks === 0 ? ' zero' : ''}">${highUnresolvedRisks}</span>
+        <span>高影響度の未解決リスク</span>
+      </div>
+      <div class="overview-alert-item">
+        <span class="overview-alert-count${reviewDeliverables === 0 ? ' zero' : ''}">${reviewDeliverables}</span>
+        <span>レビュー中の成果物</span>
+      </div>`;
+  } else {
+    alertsContainer.style.display = 'none';
+  }
 
   // Activity feed: recent decisions, sorted by date, max 10
   const allDecisions = Object.entries(decisions)
@@ -2364,6 +3175,584 @@ function editDecisionFromDetail() {
   openDecisionEditModal(viewingDecisionId);
 }
 
+// ============ RECORDS SUB-TABS ============
+function switchRecordsSubTab(tab, el) {
+  activeRecordsSubTab = tab;
+  document.querySelectorAll('.records-sub-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.records-sub-pane').forEach(p => p.classList.remove('active'));
+  const paneMap = { decisions: 'subPaneDecisions', risks: 'subPaneRisks', stakeholders: 'subPaneStakeholders' };
+  document.getElementById(paneMap[tab]).classList.add('active');
+}
+
+// ============ PROJECT PHASE ============
+function listenProjectPhase() {
+  db.ref('project/phase').on('value', snap => {
+    currentPhase = snap.val() || 'phase0';
+    renderPhaseIndicator();
+    renderOverview();
+  });
+}
+
+function renderPhaseIndicator() {
+  const phases = [
+    { key: 'phase0', num: 0, label: '企画立案' },
+    { key: 'phase1', num: 1, label: '設計' },
+    { key: 'phase2', num: 2, label: '開発' },
+    { key: 'phase3', num: 3, label: '検証' },
+    { key: 'phase4', num: 4, label: '展開' },
+  ];
+  const currentIdx = phases.findIndex(p => p.key === currentPhase);
+  const container = document.getElementById('phaseIndicator');
+  container.innerHTML = phases.map((p, i) => {
+    let cls = 'future';
+    if (i < currentIdx) cls = 'completed';
+    else if (i === currentIdx) cls = 'current';
+    return `
+      <div class="phase-step ${cls}" onclick="setProjectPhase('${p.key}')">
+        <div class="phase-circle">${p.num}</div>
+        <div class="phase-label">P${p.num} ${p.label}</div>
+      </div>`;
+  }).join('');
+}
+
+async function setProjectPhase(phase) {
+  try {
+    await db.ref('project/phase').set(phase);
+    toast('フェーズを更新しました');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+// ============ MILESTONES ============
+function listenMilestones() {
+  db.ref('milestones').on('value', snap => {
+    milestones = snap.val() || {};
+    renderMilestones();
+    renderOverview();
+  });
+}
+
+function renderMilestones() {
+  const list = document.getElementById('milestonesList');
+  let items = Object.entries(milestones).map(([id, m]) => ({ id, ...m }));
+  items.sort((a, b) => (a.planned_date || '9999').localeCompare(b.planned_date || '9999'));
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="timeline-empty">マイルストーンはまだありません</div>';
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  list.innerHTML = items.map(m => {
+    const isOverdue = m.planned_date && m.planned_date < today && m.status !== '完了' && m.status !== 'スキップ';
+    const assignee = m.assignee_id && users[m.assignee_id] ? users[m.assignee_id] : null;
+    const plannedStr = m.planned_date || '';
+    const actualStr = m.actual_date || '';
+    const phaseLabel = { phase0: 'P0 企画', phase1: 'P1 設計', phase2: 'P2 開発', phase3: 'P3 検証', phase4: 'P4 展開' }[m.phase] || m.phase || '';
+
+    return `
+      <div class="milestone-card${isOverdue ? ' overdue' : ''}" onclick="openMilestoneEditModal('${m.id}')">
+        <div class="milestone-header">
+          <span class="milestone-title">${escHtml(m.title)}</span>
+          <span class="ms-badge ms-${escHtml(m.status || '未開始')}">${escHtml(m.status || '未開始')}</span>
+        </div>
+        <div class="milestone-meta">
+          ${phaseLabel ? `<span class="phase-badge">${escHtml(phaseLabel)}</span>` : ''}
+          ${plannedStr ? `<span>予定: ${plannedStr}</span>` : ''}
+          ${actualStr ? `<span>実績: ${actualStr}</span>` : ''}
+          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+          ${isOverdue ? '<span style="color:var(--accent-red);font-weight:600;">期限超過</span>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openMilestoneCreateModal() {
+  editingMilestoneId = null;
+  document.getElementById('milestoneModalTitle').textContent = 'マイルストーンを追加';
+  document.getElementById('milestoneSubmitBtn').textContent = '追加';
+  document.getElementById('milestoneDeleteBtn').style.display = 'none';
+  document.getElementById('milestoneTitleInput').value = '';
+  document.getElementById('milestonePhaseInput').value = currentPhase;
+  document.getElementById('milestoneStatusInput').value = '未開始';
+  document.getElementById('milestonePlannedDateInput').value = '';
+  document.getElementById('milestoneActualDateInput').value = '';
+  document.getElementById('milestoneAssigneeInput').value = '';
+  document.getElementById('milestoneDepsInput').value = '';
+  document.getElementById('milestoneDeliverablesInput').value = '';
+  updateMilestoneAssigneeOptions();
+  openModal('milestoneModal');
+  setTimeout(() => document.getElementById('milestoneTitleInput').focus(), 100);
+}
+
+function openMilestoneEditModal(id) {
+  const m = milestones[id];
+  if (!m) return;
+  editingMilestoneId = id;
+  document.getElementById('milestoneModalTitle').textContent = 'マイルストーンを編集';
+  document.getElementById('milestoneSubmitBtn').textContent = '保存';
+  document.getElementById('milestoneDeleteBtn').style.display = '';
+  document.getElementById('milestoneTitleInput').value = m.title || '';
+  document.getElementById('milestonePhaseInput').value = m.phase || 'phase0';
+  document.getElementById('milestoneStatusInput').value = m.status || '未開始';
+  document.getElementById('milestonePlannedDateInput').value = m.planned_date || '';
+  document.getElementById('milestoneActualDateInput').value = m.actual_date || '';
+  document.getElementById('milestoneAssigneeInput').value = m.assignee_id || '';
+  document.getElementById('milestoneDepsInput').value = m.dependencies || '';
+  document.getElementById('milestoneDeliverablesInput').value = m.deliverable_ids || '';
+  updateMilestoneAssigneeOptions();
+  openModal('milestoneModal');
+}
+
+function updateMilestoneAssigneeOptions() {
+  const sel = document.getElementById('milestoneAssigneeInput');
+  const v = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) => `<option value="${uid}">${escHtml(u.name)}</option>`).join('');
+  sel.value = v;
+}
+
+async function submitMilestone() {
+  const title = document.getElementById('milestoneTitleInput').value.trim();
+  if (!title) { document.getElementById('milestoneTitleInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const data = {
+    title,
+    phase: document.getElementById('milestonePhaseInput').value,
+    status: document.getElementById('milestoneStatusInput').value,
+    planned_date: document.getElementById('milestonePlannedDateInput').value || null,
+    actual_date: document.getElementById('milestoneActualDateInput').value || null,
+    assignee_id: document.getElementById('milestoneAssigneeInput').value || null,
+    dependencies: document.getElementById('milestoneDepsInput').value.trim() || null,
+    deliverable_ids: document.getElementById('milestoneDeliverablesInput').value.trim() || null,
+  };
+
+  try {
+    if (editingMilestoneId) {
+      await db.ref(`milestones/${editingMilestoneId}`).update(data);
+      toast('マイルストーンを更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('milestones').push(data);
+      toast('マイルストーンを追加しました');
+    }
+    closeModal('milestoneModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteMilestone() {
+  if (!editingMilestoneId) return;
+  try {
+    await db.ref(`milestones/${editingMilestoneId}`).remove();
+    toast('マイルストーンを削除しました');
+    closeModal('milestoneModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+// ============ DELIVERABLES ============
+function listenDeliverables() {
+  db.ref('deliverables').on('value', snap => {
+    deliverables = snap.val() || {};
+    renderDeliverables();
+    renderOverview();
+  });
+}
+
+function renderDeliverables() {
+  const list = document.getElementById('deliverablesList');
+  let items = Object.entries(deliverables).map(([id, d]) => ({ id, ...d }));
+  items.sort((a, b) => (a.due_date || '9999').localeCompare(b.due_date || '9999'));
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="timeline-empty">成果物はまだありません</div>';
+    return;
+  }
+
+  const typeIcons = { '企画書': '📄', 'カリキュラム': '📚', '教材・スライド': '🎓', '演習ファイル': '💻', '報告書': '📊', 'その他': '📁' };
+
+  list.innerHTML = items.map(d => {
+    const icon = typeIcons[d.type] || '📁';
+    const assignee = d.assignee_id && users[d.assignee_id] ? users[d.assignee_id] : null;
+    const dueStr = d.due_date || '';
+
+    return `
+      <div class="deliverable-card" onclick="openDeliverableEditModal('${d.id}')">
+        <div class="deliverable-header">
+          <span style="font-size:18px;flex-shrink:0;">${icon}</span>
+          <span class="deliverable-title">${escHtml(d.title)}</span>
+          <span class="dl-type-badge">${escHtml(d.type || 'その他')}</span>
+          <span class="dl-badge dl-${escHtml(d.status || '未着手')}">${escHtml(d.status || '未着手')}</span>
+        </div>
+        <div class="deliverable-meta">
+          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+          ${dueStr ? `<span>期日: ${dueStr}</span>` : ''}
+          ${d.version ? `<span>v${escHtml(d.version)}</span>` : ''}
+          ${d.url ? `<a class="deliverable-url" href="${escHtml(d.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">リンク</a>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openDeliverableCreateModal() {
+  editingDeliverableId = null;
+  document.getElementById('deliverableModalTitle').textContent = '成果物を追加';
+  document.getElementById('deliverableSubmitBtn').textContent = '追加';
+  document.getElementById('deliverableDeleteBtn').style.display = 'none';
+  document.getElementById('deliverableTitleInput').value = '';
+  document.getElementById('deliverableTypeInput').value = '企画書';
+  document.getElementById('deliverableStatusInput').value = '未着手';
+  document.getElementById('deliverableAssigneeInput').value = '';
+  document.getElementById('deliverableDueInput').value = '';
+  document.getElementById('deliverableVersionInput').value = '';
+  document.getElementById('deliverableMilestoneInput').value = '';
+  document.getElementById('deliverableUrlInput').value = '';
+  updateDeliverableAssigneeOptions();
+  openModal('deliverableModal');
+  setTimeout(() => document.getElementById('deliverableTitleInput').focus(), 100);
+}
+
+function openDeliverableEditModal(id) {
+  const d = deliverables[id];
+  if (!d) return;
+  editingDeliverableId = id;
+  document.getElementById('deliverableModalTitle').textContent = '成果物を編集';
+  document.getElementById('deliverableSubmitBtn').textContent = '保存';
+  document.getElementById('deliverableDeleteBtn').style.display = '';
+  document.getElementById('deliverableTitleInput').value = d.title || '';
+  document.getElementById('deliverableTypeInput').value = d.type || '企画書';
+  document.getElementById('deliverableStatusInput').value = d.status || '未着手';
+  document.getElementById('deliverableAssigneeInput').value = d.assignee_id || '';
+  document.getElementById('deliverableDueInput').value = d.due_date || '';
+  document.getElementById('deliverableVersionInput').value = d.version || '';
+  document.getElementById('deliverableMilestoneInput').value = d.milestone_id || '';
+  document.getElementById('deliverableUrlInput').value = d.url || '';
+  updateDeliverableAssigneeOptions();
+  openModal('deliverableModal');
+}
+
+function updateDeliverableAssigneeOptions() {
+  const sel = document.getElementById('deliverableAssigneeInput');
+  const v = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) => `<option value="${uid}">${escHtml(u.name)}</option>`).join('');
+  sel.value = v;
+}
+
+async function submitDeliverable() {
+  const title = document.getElementById('deliverableTitleInput').value.trim();
+  if (!title) { document.getElementById('deliverableTitleInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const data = {
+    title,
+    type: document.getElementById('deliverableTypeInput').value,
+    status: document.getElementById('deliverableStatusInput').value,
+    assignee_id: document.getElementById('deliverableAssigneeInput').value || null,
+    due_date: document.getElementById('deliverableDueInput').value || null,
+    version: document.getElementById('deliverableVersionInput').value.trim() || null,
+    milestone_id: document.getElementById('deliverableMilestoneInput').value.trim() || null,
+    url: document.getElementById('deliverableUrlInput').value.trim() || null,
+  };
+
+  try {
+    if (editingDeliverableId) {
+      await db.ref(`deliverables/${editingDeliverableId}`).update(data);
+      toast('成果物を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('deliverables').push(data);
+      toast('成果物を追加しました');
+    }
+    closeModal('deliverableModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteDeliverable() {
+  if (!editingDeliverableId) return;
+  try {
+    await db.ref(`deliverables/${editingDeliverableId}`).remove();
+    toast('成果物を削除しました');
+    closeModal('deliverableModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+// ============ RISKS / ISSUES ============
+function listenRisksIssues() {
+  db.ref('risks_issues').on('value', snap => {
+    risksIssues = snap.val() || {};
+    renderRisks();
+    renderOverview();
+  });
+}
+
+function filterRiskType(type, el) {
+  riskFilter.type = type;
+  el.closest('.topics-toolbar').querySelectorAll('[data-risk-type]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRisks();
+}
+
+function filterRiskStatus(status, el) {
+  riskFilter.status = status;
+  el.closest('.topics-toolbar').querySelectorAll('[data-risk-status]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderRisks();
+}
+
+function renderRisks() {
+  const list = document.getElementById('risksList');
+  let items = Object.entries(risksIssues).map(([id, r]) => ({ id, ...r }));
+
+  // Apply filters
+  if (riskFilter.type !== 'all') items = items.filter(r => r.type === riskFilter.type);
+  if (riskFilter.status !== 'all') items = items.filter(r => r.status === riskFilter.status);
+
+  // Sort: high-impact unresolved first, then by created_at
+  const impactOrder = { high: 0, medium: 1, low: 2 };
+  items.sort((a, b) => {
+    const aResolved = a.status === '解決済み' ? 1 : 0;
+    const bResolved = b.status === '解決済み' ? 1 : 0;
+    if (aResolved !== bResolved) return aResolved - bResolved;
+    const aImp = impactOrder[a.impact] ?? 1;
+    const bImp = impactOrder[b.impact] ?? 1;
+    if (aImp !== bImp) return aImp - bImp;
+    return (b.created_at || 0) - (a.created_at || 0);
+  });
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="risks-empty">リスク/課題はまだありません</div>';
+    return;
+  }
+
+  const impactLabels = { high: '高', medium: '中', low: '低' };
+
+  list.innerHTML = items.map(r => {
+    const isHighImpact = r.impact === 'high' && r.status !== '解決済み';
+    const assignee = r.assignee_id && users[r.assignee_id] ? users[r.assignee_id] : null;
+    const typeLabel = r.type === 'risk' ? 'リスク' : '課題';
+    const dueStr = r.due_date || '';
+
+    return `
+      <div class="risk-card${isHighImpact ? ' high-impact' : ''}" onclick="openRiskEditModal('${r.id}')">
+        <div class="risk-header">
+          <span class="risk-title">${escHtml(r.title)}</span>
+          <span class="risk-type-badge rt-${escHtml(r.type || 'risk')}">${typeLabel}</span>
+          <span class="impact-badge imp-${escHtml(r.impact || 'medium')}">${impactLabels[r.impact] || '中'}</span>
+          <span class="risk-status-badge rs-${escHtml(r.status || '未対応')}">${escHtml(r.status || '未対応')}</span>
+        </div>
+        ${r.mitigation ? `<div class="risk-mitigation">${escHtml(r.mitigation)}</div>` : ''}
+        <div class="risk-meta">
+          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+          ${dueStr ? `<span>期日: ${dueStr}</span>` : ''}
+          ${r.related_area ? `<span>領域: ${escHtml(r.related_area)}</span>` : ''}
+          ${r.type === 'risk' && r.likelihood ? `<span>発生確率: ${impactLabels[r.likelihood] || '中'}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleLikelihood() {
+  const type = document.getElementById('riskTypeInput').value;
+  document.getElementById('likelihoodGroup').style.display = type === 'risk' ? '' : 'none';
+}
+
+function openRiskCreateModal() {
+  editingRiskId = null;
+  document.getElementById('riskModalTitle').textContent = 'リスク/課題を追加';
+  document.getElementById('riskSubmitBtn').textContent = '追加';
+  document.getElementById('riskDeleteBtn').style.display = 'none';
+  document.getElementById('riskTitleInput').value = '';
+  document.getElementById('riskTypeInput').value = 'risk';
+  document.getElementById('riskImpactInput').value = 'medium';
+  document.getElementById('riskLikelihoodInput').value = 'medium';
+  document.getElementById('riskStatusInput').value = '未対応';
+  document.getElementById('riskMitigationInput').value = '';
+  document.getElementById('riskAssigneeInput').value = '';
+  document.getElementById('riskDueInput').value = '';
+  document.getElementById('riskAreaInput').value = '';
+  document.getElementById('likelihoodGroup').style.display = '';
+  updateRiskAssigneeOptions();
+  openModal('riskModal');
+  setTimeout(() => document.getElementById('riskTitleInput').focus(), 100);
+}
+
+function openRiskEditModal(id) {
+  const r = risksIssues[id];
+  if (!r) return;
+  editingRiskId = id;
+  document.getElementById('riskModalTitle').textContent = 'リスク/課題を編集';
+  document.getElementById('riskSubmitBtn').textContent = '保存';
+  document.getElementById('riskDeleteBtn').style.display = '';
+  document.getElementById('riskTitleInput').value = r.title || '';
+  document.getElementById('riskTypeInput').value = r.type || 'risk';
+  document.getElementById('riskImpactInput').value = r.impact || 'medium';
+  document.getElementById('riskLikelihoodInput').value = r.likelihood || 'medium';
+  document.getElementById('riskStatusInput').value = r.status || '未対応';
+  document.getElementById('riskMitigationInput').value = r.mitigation || '';
+  document.getElementById('riskAssigneeInput').value = r.assignee_id || '';
+  document.getElementById('riskDueInput').value = r.due_date || '';
+  document.getElementById('riskAreaInput').value = r.related_area || '';
+  document.getElementById('likelihoodGroup').style.display = r.type === 'risk' ? '' : 'none';
+  updateRiskAssigneeOptions();
+  openModal('riskModal');
+}
+
+function updateRiskAssigneeOptions() {
+  const sel = document.getElementById('riskAssigneeInput');
+  const v = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) => `<option value="${uid}">${escHtml(u.name)}</option>`).join('');
+  sel.value = v;
+}
+
+async function submitRisk() {
+  const title = document.getElementById('riskTitleInput').value.trim();
+  if (!title) { document.getElementById('riskTitleInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const type = document.getElementById('riskTypeInput').value;
+  const data = {
+    title,
+    type,
+    impact: document.getElementById('riskImpactInput').value,
+    likelihood: type === 'risk' ? document.getElementById('riskLikelihoodInput').value : null,
+    status: document.getElementById('riskStatusInput').value,
+    mitigation: document.getElementById('riskMitigationInput').value.trim() || null,
+    assignee_id: document.getElementById('riskAssigneeInput').value || null,
+    due_date: document.getElementById('riskDueInput').value || null,
+    related_area: document.getElementById('riskAreaInput').value.trim() || null,
+  };
+
+  try {
+    if (editingRiskId) {
+      await db.ref(`risks_issues/${editingRiskId}`).update(data);
+      toast('リスク/課題を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('risks_issues').push(data);
+      toast('リスク/課題を追加しました');
+    }
+    closeModal('riskModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteRisk() {
+  if (!editingRiskId) return;
+  try {
+    await db.ref(`risks_issues/${editingRiskId}`).remove();
+    toast('リスク/課題を削除しました');
+    closeModal('riskModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+// ============ STAKEHOLDERS ============
+function listenStakeholders() {
+  db.ref('stakeholders').on('value', snap => {
+    stakeholders = snap.val() || {};
+    renderStakeholders();
+  });
+}
+
+function renderStakeholders() {
+  const list = document.getElementById('stakeholdersList');
+  let items = Object.entries(stakeholders).map(([id, s]) => ({ id, ...s }));
+  items.sort((a, b) => {
+    const roleOrder = { 'オーナー': 0, '承認者': 1, '実行者': 2, 'アドバイザー': 3, '対象者代表': 4 };
+    return (roleOrder[a.role] ?? 9) - (roleOrder[b.role] ?? 9);
+  });
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="stakeholders-empty">関係者はまだ登録されていません</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(s => {
+    return `
+      <div class="stakeholder-card" onclick="openStakeholderEditModal('${s.id}')">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="stakeholder-name">${escHtml(s.name)}</span>
+          <span class="stakeholder-role-badge sr-${escHtml(s.role || '実行者')}">${escHtml(s.role || '実行者')}</span>
+          <span class="involvement-badge inv-${escHtml(s.involvement || '中')}">関与: ${escHtml(s.involvement || '中')}</span>
+        </div>
+        ${s.organization ? `<div class="stakeholder-detail">${escHtml(s.organization)}</div>` : ''}
+        ${s.responsibilities ? `<div class="stakeholder-detail">${escHtml(s.responsibilities)}</div>` : ''}
+        <div class="stakeholder-meta">
+          ${s.contact ? `<span>${escHtml(s.contact)}</span>` : ''}
+          ${s.last_contacted ? `<span>最終連絡: ${s.last_contacted}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openStakeholderCreateModal() {
+  editingStakeholderId = null;
+  document.getElementById('stakeholderModalTitle').textContent = '関係者を追加';
+  document.getElementById('stakeholderSubmitBtn').textContent = '追加';
+  document.getElementById('stakeholderDeleteBtn').style.display = 'none';
+  document.getElementById('stakeholderNameInput').value = '';
+  document.getElementById('stakeholderRoleInput').value = '実行者';
+  document.getElementById('stakeholderInvolvementInput').value = '中';
+  document.getElementById('stakeholderOrgInput').value = '';
+  document.getElementById('stakeholderRespInput').value = '';
+  document.getElementById('stakeholderContactInput').value = '';
+  document.getElementById('stakeholderLastContactInput').value = '';
+  openModal('stakeholderModal');
+  setTimeout(() => document.getElementById('stakeholderNameInput').focus(), 100);
+}
+
+function openStakeholderEditModal(id) {
+  const s = stakeholders[id];
+  if (!s) return;
+  editingStakeholderId = id;
+  document.getElementById('stakeholderModalTitle').textContent = '関係者を編集';
+  document.getElementById('stakeholderSubmitBtn').textContent = '保存';
+  document.getElementById('stakeholderDeleteBtn').style.display = '';
+  document.getElementById('stakeholderNameInput').value = s.name || '';
+  document.getElementById('stakeholderRoleInput').value = s.role || '実行者';
+  document.getElementById('stakeholderInvolvementInput').value = s.involvement || '中';
+  document.getElementById('stakeholderOrgInput').value = s.organization || '';
+  document.getElementById('stakeholderRespInput').value = s.responsibilities || '';
+  document.getElementById('stakeholderContactInput').value = s.contact || '';
+  document.getElementById('stakeholderLastContactInput').value = s.last_contacted || '';
+  openModal('stakeholderModal');
+}
+
+async function submitStakeholder() {
+  const name = document.getElementById('stakeholderNameInput').value.trim();
+  if (!name) { document.getElementById('stakeholderNameInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const data = {
+    name,
+    role: document.getElementById('stakeholderRoleInput').value,
+    involvement: document.getElementById('stakeholderInvolvementInput').value,
+    organization: document.getElementById('stakeholderOrgInput').value.trim() || null,
+    responsibilities: document.getElementById('stakeholderRespInput').value.trim() || null,
+    contact: document.getElementById('stakeholderContactInput').value.trim() || null,
+    last_contacted: document.getElementById('stakeholderLastContactInput').value || null,
+  };
+
+  try {
+    if (editingStakeholderId) {
+      await db.ref(`stakeholders/${editingStakeholderId}`).update(data);
+      toast('関係者を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('stakeholders').push(data);
+      toast('関係者を追加しました');
+    }
+    closeModal('stakeholderModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteStakeholder() {
+  if (!editingStakeholderId) return;
+  try {
+    await db.ref(`stakeholders/${editingStakeholderId}`).remove();
+    toast('関係者を削除しました');
+    closeModal('stakeholderModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
 // ============ RENDER (TASKS) ============
 function renderBoard() {
   const columns = { todo: [], doing: [], done: [] };
@@ -2731,6 +4120,22 @@ function closeModal(id) {
     editingDecisionId = null;
     document.getElementById('decisionTitleInput').style.borderColor = '';
   }
+  if (id === 'milestoneModal') {
+    editingMilestoneId = null;
+    document.getElementById('milestoneTitleInput').style.borderColor = '';
+  }
+  if (id === 'deliverableModal') {
+    editingDeliverableId = null;
+    document.getElementById('deliverableTitleInput').style.borderColor = '';
+  }
+  if (id === 'riskModal') {
+    editingRiskId = null;
+    document.getElementById('riskTitleInput').style.borderColor = '';
+  }
+  if (id === 'stakeholderModal') {
+    editingStakeholderId = null;
+    document.getElementById('stakeholderNameInput').style.borderColor = '';
+  }
 }
 
 function toggleColumn(headerEl) {
@@ -2767,6 +4172,10 @@ document.addEventListener('keydown', e => {
     closeModal('topicDetailModal');
     closeModal('decisionModal');
     closeModal('decisionDetailModal');
+    closeModal('milestoneModal');
+    closeModal('deliverableModal');
+    closeModal('riskModal');
+    closeModal('stakeholderModal');
     document.getElementById('membersPanel').classList.remove('active');
   }
 });
