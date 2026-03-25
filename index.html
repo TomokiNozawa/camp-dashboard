@@ -1883,6 +1883,92 @@ html, body {
 
 /* Drag hint */
 .drag-over { background: rgba(90,173,255,0.08); border-style: dashed; }
+
+/* ============ CLICKABLE SUMMARY CARDS ============ */
+.summary-card.clickable {
+  cursor: pointer;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.summary-card.clickable:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 4px 12px rgba(90,173,255,0.15);
+}
+
+/* ============ SHORTCUT HELP BUTTON & MODAL ============ */
+.btn-shortcut-help {
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.btn-shortcut-help:hover { background: var(--bg-card); color: var(--text-primary); }
+
+.shortcut-help-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 250;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.shortcut-help-overlay.active { display: flex; }
+
+.shortcut-help-modal {
+  background: var(--bg-modal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 340px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.shortcut-help-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.shortcut-help-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.shortcut-help-body {
+  padding: 14px 18px 18px;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+}
+.shortcut-keys {
+  display: flex; gap: 4px;
+}
+.shortcut-key {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; height: 22px;
+  padding: 0 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+  font-family: inherit;
+}
+.shortcut-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
 </style>
 </head>
 <body>
@@ -1918,6 +2004,7 @@ html, body {
       <span class="header-title">Camp Dashboard</span>
     </div>
     <div class="header-right">
+      <button class="btn-shortcut-help" onclick="toggleShortcutHelp()" title="キーボードショートカット">?</button>
       <div class="header-user" style="position:relative;cursor:pointer" onclick="toggleUserMenu()">
         <span class="header-user-name" id="headerUserName"></span>
         <img class="header-avatar" id="headerAvatar" alt="">
@@ -1943,22 +2030,22 @@ html, body {
   <!-- ===== OVERVIEW TAB ===== -->
   <div class="tab-pane active overview-pane" id="paneOverview">
     <div class="summary-cards">
-      <div class="summary-card">
+      <div class="summary-card clickable" onclick="onSummaryCardClick('phase')">
         <div class="summary-card-label">現在のフェーズ</div>
         <div class="summary-card-value" style="font-size:15px;" id="overviewPhase">Phase 0</div>
         <div class="summary-card-sub">企画立案</div>
       </div>
-      <div class="summary-card">
+      <div class="summary-card clickable" onclick="onSummaryCardClick('topics')">
         <div class="summary-card-label">未決論点</div>
         <div class="summary-card-value" id="overviewOpenTopics">0</div>
         <div class="summary-card-sub">件</div>
       </div>
-      <div class="summary-card">
+      <div class="summary-card clickable" onclick="onSummaryCardClick('tasks')">
         <div class="summary-card-label">未完了タスク</div>
         <div class="summary-card-value" id="overviewOpenTasks">0</div>
         <div class="summary-card-sub">件</div>
       </div>
-      <div class="summary-card">
+      <div class="summary-card clickable" onclick="onSummaryCardClick('risks')">
         <div class="summary-card-label">高リスク/課題</div>
         <div class="summary-card-value" id="overviewHighRisks">0</div>
         <div class="summary-card-sub">件（未対応+対応中）</div>
@@ -2847,6 +2934,34 @@ html, body {
   <div class="members-list" id="membersList"></div>
 </div>
 
+<!-- Shortcut Help Modal -->
+<div class="shortcut-help-overlay" id="shortcutHelpOverlay" onclick="if(event.target===this)closeShortcutHelp()">
+  <div class="shortcut-help-modal">
+    <div class="shortcut-help-header">
+      <span class="shortcut-help-title">キーボードショートカット</span>
+      <button class="modal-close" onclick="closeShortcutHelp()">&times;</button>
+    </div>
+    <div class="shortcut-help-body">
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Alt</span><span class="shortcut-key">1</span>~<span class="shortcut-key">5</span></div>
+        <span class="shortcut-desc">タブ切替</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Alt</span><span class="shortcut-key">&uarr;</span>/<span class="shortcut-key">&darr;</span></div>
+        <span class="shortcut-desc">前/次のタブ</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Esc</span></div>
+        <span class="shortcut-desc">モーダルを閉じる</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">?</span></div>
+        <span class="shortcut-desc">このヘルプを表示</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
@@ -3477,7 +3592,9 @@ function renderTopics() {
   if (topicFilter.category !== '全て') {
     items = items.filter(t => t.category === topicFilter.category);
   }
-  if (topicFilter.status !== '全て') {
+  if (topicFilter.status === '_undecided') {
+    items = items.filter(t => t.status !== '決定済み' && t.status !== '取り下げ');
+  } else if (topicFilter.status !== '全て') {
     items = items.filter(t => t.status === topicFilter.status);
   }
 
@@ -5262,6 +5379,43 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
+// ============ SHORTCUT HELP ============
+function toggleShortcutHelp() {
+  document.getElementById('shortcutHelpOverlay').classList.toggle('active');
+}
+function closeShortcutHelp() {
+  document.getElementById('shortcutHelpOverlay').classList.remove('active');
+}
+
+// ============ SUMMARY CARD CLICK HANDLERS ============
+function onSummaryCardClick(type) {
+  if (type === 'phase') {
+    const tabEl = document.querySelector('.tab-item[data-tab="timeline"]');
+    if (tabEl) switchTab('timeline', tabEl);
+  } else if (type === 'topics') {
+    const tabEl = document.querySelector('.tab-item[data-tab="topics"]');
+    if (tabEl) switchTab('topics', tabEl);
+    // Filter to show only non-decided topics (exclude 決定済み and 取り下げ)
+    topicFilter.category = '全て';
+    topicFilter.status = '_undecided';
+    document.querySelectorAll('[data-topic-cat]').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('[data-topic-status]').forEach(c => c.classList.remove('active'));
+    const allCatBtn = document.querySelector('[data-topic-cat="全て"]');
+    if (allCatBtn) allCatBtn.classList.add('active');
+    // No matching status chip for _undecided, so leave none highlighted
+    renderTopics();
+  } else if (type === 'tasks') {
+    const tabEl = document.querySelector('.tab-item[data-tab="tasks"]');
+    if (tabEl) switchTab('tasks', tabEl);
+  } else if (type === 'risks') {
+    const tabEl = document.querySelector('.tab-item[data-tab="records"]');
+    if (tabEl) switchTab('records', tabEl);
+    // Switch to risks sub-tab
+    const risksSubTab = document.querySelector('.records-sub-tab[data-records-tab="risks"]');
+    if (risksSubTab) switchRecordsSubTab('risks', risksSubTab);
+  }
+}
+
 // Close modals on Escape / overlay click
 const TAB_ORDER = ['overview', 'topics', 'tasks', 'timeline', 'records'];
 
@@ -5293,7 +5447,17 @@ document.addEventListener('keydown', e => {
     if (tabEl) switchTab(TAB_ORDER[nextIdx], tabEl);
     return;
   }
+  // ? key: toggle shortcut help (only when not focused on input)
+  if (e.key === '?' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    const tag = document.activeElement?.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+      e.preventDefault();
+      toggleShortcutHelp();
+      return;
+    }
+  }
   if (e.key === 'Escape') {
+    closeShortcutHelp();
     closeModal('taskModal');
     closeDeleteModal();
     closeModal('topicModal');
