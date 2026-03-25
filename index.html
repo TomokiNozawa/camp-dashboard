@@ -2105,7 +2105,7 @@ html, body {
 <!-- ===== LOADING SCREEN ===== -->
 <div id="loadingScreen" class="screen active" style="align-items:center;justify-content:center">
   <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
-    <div class="login-logo"><img src="logo-light.png" alt="CCC" class="logo-img"></div>
+    <div class="login-logo"><img src="logo-dark.png" alt="CCC" class="logo-img"></div>
     <div class="loading-spinner"></div>
     <div style="color:var(--text-secondary);font-size:14px">読み込み中...</div>
   </div>
@@ -2113,7 +2113,7 @@ html, body {
 
 <!-- ===== LOGIN SCREEN ===== -->
 <div id="loginScreen" class="screen">
-  <div class="login-logo"><img src="logo-light.png" alt="CCC" class="logo-img"></div>
+  <div class="login-logo"><img src="logo-dark.png" alt="CCC" class="logo-img"></div>
   <div class="login-title">Camp Dashboard</div>
   <div class="login-subtitle">Claude Cowork Camp の企画・タスク管理<br>チームメンバー限定</div>
   <button class="btn-slack" onclick="startSlackLogin()">
@@ -2129,7 +2129,7 @@ html, body {
   <!-- Header -->
   <header class="app-header">
     <div class="header-left">
-      <div class="header-logo"><img src="logo-light.png" alt="CCC" class="logo-img"></div>
+      <div class="header-logo"><img src="logo-dark.png" alt="CCC" class="logo-img"></div>
       <span class="header-title">Camp Dashboard</span>
     </div>
     <div class="header-right">
@@ -3146,18 +3146,16 @@ const AUTH_WORKER_URL = "https://camp-auth.tomoki-nozawa.workers.dev";
 function formatDateTime(ts) {
   if (!ts) return '';
   const d = new Date(ts);
-  const jst = new Date(d.getTime() + (9 * 60 - d.getTimezoneOffset()) * 60000);
-  const m = jst.getMonth() + 1;
-  const day = jst.getDate();
-  const h = String(jst.getHours()).padStart(2, '0');
-  const min = String(jst.getMinutes()).padStart(2, '0');
-  return `${m}/${day} ${h}:${min}`;
+  const s = d.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+  return s.replace(/\s+/g, ' ');
 }
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00+09:00');
-  return `${d.getMonth() + 1}/${d.getDate()}`;
+  const parts = String(dateStr).split('-');
+  if (parts.length === 3) return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric' });
 }
 
 // ============ STATE ============
@@ -5992,7 +5990,7 @@ function updateThemeUI(isLight) {
   const el = document.getElementById('themeMenuItem');
   if (el) el.textContent = isLight ? '\uD83C\uDF19 \u30C0\u30FC\u30AF\u30E2\u30FC\u30C9' : '\u2600 \u30E9\u30A4\u30C8\u30E2\u30FC\u30C9';
   document.querySelector('meta[name="theme-color"]').content = isLight ? '#ffffff' : '#0a0e14';
-  const logoSrc = isLight ? 'logo-dark.png' : 'logo-light.png';
+  const logoSrc = isLight ? 'logo-light.png' : 'logo-dark.png';
   document.querySelectorAll('.logo-img').forEach(img => img.src = logoSrc);
 }
 
