@@ -260,7 +260,7 @@ html, body {
 
 .summary-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
 }
@@ -943,12 +943,225 @@ html, body {
 }
 .overview-alert-count.zero { color: var(--accent-green); }
 
-.timeline-empty, .risks-empty, .stakeholders-empty {
+.timeline-empty, .risks-empty, .stakeholders-empty, .feedback-empty, .budget-empty {
   text-align: center;
   color: var(--text-muted);
   padding: 40px 20px;
   font-size: 13px;
 }
+
+/* ============ FEEDBACK ============ */
+.feedback-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.feedback-card:hover { background: var(--bg-card-hover); }
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.feedback-title {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.fb-type-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.fb-type-badge.fbt-パイロット結果 { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.fb-type-badge.fbt-内部レビュー { background: rgba(184,140,255,0.2); color: var(--accent-purple); }
+.fb-type-badge.fbt-受講者アンケート { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+.fb-type-badge.fbt-外部FB { background: rgba(240,136,62,0.2); color: var(--accent-orange); }
+
+.fb-action-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.fb-action-badge.fba-未対応 { background: rgba(139,149,165,0.2); color: var(--text-secondary); }
+.fb-action-badge.fba-検討中 { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.fb-action-badge.fba-対応済み { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+.fb-action-badge.fba-見送り { background: rgba(248,81,73,0.2); color: var(--accent-red); }
+
+.feedback-content {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.feedback-content.expanded {
+  -webkit-line-clamp: unset;
+}
+
+.feedback-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============ BUDGET ============ */
+.budget-summary-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 12px 20px 0;
+}
+.budget-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.budget-summary-item {
+  text-align: center;
+  flex: 1;
+  min-width: 80px;
+}
+.budget-summary-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+.budget-summary-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.budget-bar-container {
+  height: 12px;
+  background: var(--bg-primary);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+.budget-bar-estimated {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-green), rgba(66,199,96,0.6));
+  border-radius: 6px;
+  position: absolute;
+  top: 0; left: 0;
+}
+.budget-bar-actual {
+  height: 100%;
+  border-radius: 6px;
+  position: absolute;
+  top: 0; left: 0;
+  opacity: 0.8;
+}
+
+.budget-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.budget-card:hover { background: var(--bg-card-hover); }
+
+.budget-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.budget-item-name {
+  font-size: 14px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.budget-cat-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.budget-cat-badge.bc-教材開発 { background: rgba(90,173,255,0.2); color: var(--accent-blue); }
+.budget-cat-badge.bc-会場費 { background: rgba(240,136,62,0.2); color: var(--accent-orange); }
+.budget-cat-badge.bc-ツール費 { background: rgba(184,140,255,0.2); color: var(--accent-purple); }
+.budget-cat-badge.bc-外部講師 { background: rgba(232,184,64,0.2); color: var(--accent-yellow); }
+.budget-cat-badge.bc-人件費 { background: rgba(66,199,96,0.2); color: var(--accent-green); }
+.budget-cat-badge.bc-その他 { background: rgba(139,149,165,0.2); color: var(--text-secondary); }
+
+.budget-amounts {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.budget-amounts span { white-space: nowrap; }
+
+.budget-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* ============ UNIFIED ACTIVITY FEED ============ */
+.activity-type-bar {
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.activity-item { position: relative; }
+.activity-type-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+/* Records sub-tabs horizontal scroll */
+.records-sub-tabs {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.records-sub-tabs::-webkit-scrollbar { display: none; }
 
 /* ============ COMMENT THREAD ============ */
 .comment-thread {
@@ -1846,6 +2059,8 @@ html, body {
       <button class="records-sub-tab active" data-records-tab="decisions" onclick="switchRecordsSubTab('decisions', this)">意思決定</button>
       <button class="records-sub-tab" data-records-tab="risks" onclick="switchRecordsSubTab('risks', this)">リスク/課題</button>
       <button class="records-sub-tab" data-records-tab="stakeholders" onclick="switchRecordsSubTab('stakeholders', this)">関係者</button>
+      <button class="records-sub-tab" data-records-tab="feedback" onclick="switchRecordsSubTab('feedback', this)">フィードバック</button>
+      <button class="records-sub-tab" data-records-tab="budget" onclick="switchRecordsSubTab('budget', this)">予算/工数</button>
     </div>
 
     <!-- Decisions sub-pane -->
@@ -1890,6 +2105,45 @@ html, body {
       </div>
       <div class="stakeholders-grid" id="stakeholdersList">
         <div class="stakeholders-empty">関係者はまだ登録されていません</div>
+      </div>
+    </div>
+
+    <!-- Feedback sub-pane -->
+    <div class="records-sub-pane" id="subPaneFeedback">
+      <div class="records-toolbar">
+        <span style="font-size:14px;font-weight:600;">フィードバック</span>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openFeedbackCreateModal()">+ 追加</button>
+      </div>
+      <div class="topics-toolbar" id="feedbackFilterBar">
+        <span class="topics-toolbar-label">種別:</span>
+        <button class="filter-chip active" data-fb-type="all" onclick="filterFeedbackType('all', this)">全て</button>
+        <button class="filter-chip" data-fb-type="パイロット結果" onclick="filterFeedbackType('パイロット結果', this)">パイロット結果</button>
+        <button class="filter-chip" data-fb-type="内部レビュー" onclick="filterFeedbackType('内部レビュー', this)">内部レビュー</button>
+        <button class="filter-chip" data-fb-type="受講者アンケート" onclick="filterFeedbackType('受講者アンケート', this)">受講者アンケート</button>
+        <button class="filter-chip" data-fb-type="外部FB" onclick="filterFeedbackType('外部FB', this)">外部FB</button>
+      </div>
+      <div class="topics-toolbar" id="feedbackStatusFilterBar">
+        <span class="topics-toolbar-label">対応状況:</span>
+        <button class="filter-chip active" data-fb-action="all" onclick="filterFeedbackAction('all', this)">全て</button>
+        <button class="filter-chip" data-fb-action="未対応" onclick="filterFeedbackAction('未対応', this)">未対応</button>
+        <button class="filter-chip" data-fb-action="検討中" onclick="filterFeedbackAction('検討中', this)">検討中</button>
+        <button class="filter-chip" data-fb-action="対応済み" onclick="filterFeedbackAction('対応済み', this)">対応済み</button>
+        <button class="filter-chip" data-fb-action="見送り" onclick="filterFeedbackAction('見送り', this)">見送り</button>
+      </div>
+      <div class="records-list" id="feedbackList">
+        <div class="feedback-empty">フィードバックはまだありません</div>
+      </div>
+    </div>
+
+    <!-- Budget sub-pane -->
+    <div class="records-sub-pane" id="subPaneBudget">
+      <div class="records-toolbar">
+        <span style="font-size:14px;font-weight:600;">予算/工数</span>
+        <button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="openBudgetCreateModal()">+ 追加</button>
+      </div>
+      <div id="budgetSummaryBar" class="budget-summary-bar" style="display:none;"></div>
+      <div class="records-list" id="budgetList">
+        <div class="budget-empty">予算項目はまだありません</div>
       </div>
     </div>
   </div>
@@ -2390,6 +2644,134 @@ html, body {
   </div>
 </div>
 
+<!-- ===== FEEDBACK CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="feedbackModalTitle">フィードバックを追加</span>
+      <button class="modal-close" onclick="closeModal('feedbackModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input class="form-input" id="feedbackTitleInput" placeholder="フィードバックのタイトル" maxlength="200">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">種別</label>
+          <select class="form-select" id="feedbackTypeInput">
+            <option value="パイロット結果">パイロット結果</option>
+            <option value="内部レビュー">内部レビュー</option>
+            <option value="受講者アンケート">受講者アンケート</option>
+            <option value="外部FB">外部FB</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">対応状況</label>
+          <select class="form-select" id="feedbackActionStatusInput">
+            <option value="未対応">未対応</option>
+            <option value="検討中">検討中</option>
+            <option value="対応済み">対応済み</option>
+            <option value="見送り">見送り</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">情報源（誰から）</label>
+          <input class="form-input" id="feedbackSourceInput" placeholder="例: 佐藤さん, パイロット受講者">
+        </div>
+        <div class="form-group">
+          <label class="form-label">対象</label>
+          <input class="form-input" id="feedbackTargetInput" placeholder="例: カリキュラム設計, 演習内容">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容</label>
+        <textarea class="form-textarea" id="feedbackContentInput" placeholder="フィードバックの詳細" rows="4"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">対応内容</label>
+        <textarea class="form-textarea" id="feedbackActionTakenInput" placeholder="実施した対応（任意）" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('feedbackModal')">キャンセル</button>
+      <button class="btn btn-danger" id="feedbackDeleteBtn" style="display:none;" onclick="deleteFeedback()">削除</button>
+      <button class="btn btn-primary" id="feedbackSubmitBtn" onclick="submitFeedback()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FEEDBACK DETAIL MODAL ===== -->
+<div class="modal-overlay" id="feedbackDetailModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title">フィードバックの詳細</span>
+      <button class="modal-close" onclick="closeModal('feedbackDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="feedbackDetailBody"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('feedbackDetailModal')">閉じる</button>
+      <button class="btn btn-primary" onclick="editFeedbackFromDetail()">編集</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BUDGET CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="budgetModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:520px">
+    <div class="modal-header">
+      <span class="modal-title" id="budgetModalTitle">予算項目を追加</span>
+      <button class="modal-close" onclick="closeModal('budgetModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">項目名</label>
+        <input class="form-input" id="budgetItemInput" placeholder="予算項目の名称" maxlength="200">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">カテゴリ</label>
+          <select class="form-select" id="budgetCategoryInput">
+            <option value="教材開発">教材開発</option>
+            <option value="会場費">会場費</option>
+            <option value="ツール費">ツール費</option>
+            <option value="外部講師">外部講師</option>
+            <option value="人件費">人件費</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">担当者</label>
+          <select class="form-select" id="budgetAssigneeInput">
+            <option value="">未割り当て</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">見積金額（円）</label>
+          <input class="form-input" id="budgetEstimatedInput" type="number" placeholder="0" min="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">実績金額（円）</label>
+          <input class="form-input" id="budgetActualInput" type="number" placeholder="0" min="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">メモ</label>
+        <textarea class="form-textarea" id="budgetMemoInput" placeholder="備考（任意）" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('budgetModal')">キャンセル</button>
+      <button class="btn btn-danger" id="budgetDeleteBtn" style="display:none;" onclick="deleteBudget()">削除</button>
+      <button class="btn btn-primary" id="budgetSubmitBtn" onclick="submitBudget()">追加</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== MEMBERS PANEL ===== -->
 <div class="members-panel" id="membersPanel">
   <div class="members-header">
@@ -2432,6 +2814,8 @@ let milestones = {};     // { milestoneId: milestoneData }
 let deliverables = {};   // { deliverableId: deliverableData }
 let risksIssues = {};    // { riskId: riskData }
 let stakeholders = {};   // { stakeholderId: stakeholderData }
+let feedbackLogs = {};   // { feedbackId: feedbackData }
+let budgets = {};        // { budgetId: budgetData }
 let currentPhase = 'phase0';
 let editingTaskId = null;
 let deleteTaskId = null;
@@ -2441,12 +2825,16 @@ let editingMilestoneId = null;
 let editingDeliverableId = null;
 let editingRiskId = null;
 let editingStakeholderId = null;
+let editingFeedbackId = null;
+let editingBudgetId = null;
 let viewingTopicId = null;
 let viewingDecisionId = null;
+let viewingFeedbackId = null;
 let currentFilter = { status: 'all', assignee: 'all', priority: 'all' };
 let currentSort = 'created';
 let topicFilter = { category: '全て', status: '全て' };
 let riskFilter = { type: 'all', status: 'all' };
+let feedbackFilter = { type: 'all', action: 'all' };
 let activeTab = 'overview';
 let activeRecordsSubTab = 'decisions';
 
@@ -2554,6 +2942,8 @@ function logout() {
   deliverables = {};
   risksIssues = {};
   stakeholders = {};
+  feedbackLogs = {};
+  budgets = {};
   showLogin();
 }
 
@@ -2590,6 +2980,8 @@ function showApp() {
   listenDeliverables();
   listenRisksIssues();
   listenStakeholders();
+  listenFeedbackLogs();
+  listenBudgets();
   listenProjectPhase();
 }
 
@@ -2619,6 +3011,8 @@ function handleFabClick() {
   } else if (activeTab === 'records') {
     if (activeRecordsSubTab === 'risks') openRiskCreateModal();
     else if (activeRecordsSubTab === 'stakeholders') openStakeholderCreateModal();
+    else if (activeRecordsSubTab === 'feedback') openFeedbackCreateModal();
+    else if (activeRecordsSubTab === 'budget') openBudgetCreateModal();
     else openDecisionCreateModal();
   } else {
     openCreateModal('todo');
@@ -2691,6 +3085,28 @@ function renderOverview() {
   ).length;
   document.getElementById('overviewHighRisks').textContent = highRisks;
 
+  // Budget summary card (5th card) - dynamically add/remove
+  const summaryCards = document.querySelector('.summary-cards');
+  let budgetCard = document.getElementById('overviewBudgetCard');
+  const budgetItems = Object.values(budgets);
+  if (budgetItems.length > 0) {
+    const totalEst = budgetItems.reduce((s, b) => s + (Number(b.estimated) || 0), 0);
+    const totalAct = budgetItems.reduce((s, b) => s + (Number(b.actual) || 0), 0);
+    const budgetColor = totalAct > totalEst ? 'var(--accent-red)' : 'var(--accent-green)';
+    if (!budgetCard) {
+      budgetCard = document.createElement('div');
+      budgetCard.className = 'summary-card';
+      budgetCard.id = 'overviewBudgetCard';
+      summaryCards.appendChild(budgetCard);
+    }
+    budgetCard.innerHTML = `
+      <div class="summary-card-label">予算状況</div>
+      <div class="summary-card-value" style="font-size:13px;color:${budgetColor}">${formatYen(totalAct)} / ${formatYen(totalEst)}</div>
+      <div class="summary-card-sub">実績 / 見積</div>`;
+  } else if (budgetCard) {
+    budgetCard.remove();
+  }
+
   // Alerts section
   const today = new Date().toISOString().slice(0, 10);
   const overdueMilestones = Object.values(milestones).filter(m =>
@@ -2705,14 +3121,20 @@ function renderOverview() {
   const reviewDeliverables = Object.values(deliverables).filter(d =>
     d.status === 'レビュー中'
   ).length;
+  const unaddressedFeedback = Object.values(feedbackLogs).filter(f =>
+    f.action_status === '未対応'
+  ).length;
+  const budgetOverrun = budgetItems.length > 0 &&
+    budgetItems.reduce((s, b) => s + (Number(b.actual) || 0), 0) >
+    budgetItems.reduce((s, b) => s + (Number(b.estimated) || 0), 0);
 
   const alertsContainer = document.getElementById('overviewAlerts');
-  const alertItems = document.getElementById('overviewAlertItems');
-  const hasAlerts = overdueMilestones > 0 || overdueTasks > 0 || highUnresolvedRisks > 0 || reviewDeliverables > 0;
+  const alertItemsEl = document.getElementById('overviewAlertItems');
+  const hasAlerts = overdueMilestones > 0 || overdueTasks > 0 || highUnresolvedRisks > 0 || reviewDeliverables > 0 || unaddressedFeedback > 0 || budgetOverrun;
 
   if (hasAlerts) {
     alertsContainer.style.display = '';
-    alertItems.innerHTML = `
+    alertItemsEl.innerHTML = `
       <div class="overview-alert-item">
         <span class="overview-alert-count${overdueMilestones === 0 ? ' zero' : ''}">${overdueMilestones}</span>
         <span>期限超過マイルストーン</span>
@@ -2728,39 +3150,127 @@ function renderOverview() {
       <div class="overview-alert-item">
         <span class="overview-alert-count${reviewDeliverables === 0 ? ' zero' : ''}">${reviewDeliverables}</span>
         <span>レビュー中の成果物</span>
-      </div>`;
+      </div>
+      <div class="overview-alert-item">
+        <span class="overview-alert-count${unaddressedFeedback === 0 ? ' zero' : ''}">${unaddressedFeedback}</span>
+        <span>未対応フィードバック</span>
+      </div>
+      ${budgetOverrun ? `<div class="overview-alert-item">
+        <span class="overview-alert-count">!</span>
+        <span>予算超過（実績が見積を上回っています）</span>
+      </div>` : ''}`;
   } else {
     alertsContainer.style.display = 'none';
   }
 
-  // Activity feed: recent decisions, sorted by date, max 10
-  const allDecisions = Object.entries(decisions)
-    .map(([id, d]) => ({ id, ...d, _type: 'decision' }))
-    .sort((a, b) => (b.decided_at || b.created_at || 0) - (a.decided_at || a.created_at || 0))
-    .slice(0, 10);
+  // Unified Activity feed: merge decisions, feedback, risks, milestones
+  const feedItems = [];
+
+  // Decisions
+  Object.entries(decisions).forEach(([id, d]) => {
+    const author = d.decided_by && users[d.decided_by] ? users[d.decided_by] : null;
+    feedItems.push({
+      _type: 'decision',
+      _ts: d.decided_at || d.created_at || 0,
+      _icon: '✓',
+      _iconBg: 'rgba(66,199,96,0.15)',
+      _iconColor: 'var(--accent-green)',
+      _borderColor: 'var(--accent-green)',
+      _badge: '決定',
+      _badgeBg: 'rgba(66,199,96,0.2)',
+      _badgeColor: 'var(--accent-green)',
+      title: d.title,
+      desc: d.content ? d.content.substring(0, 60) + (d.content.length > 60 ? '...' : '') : '',
+      author,
+    });
+  });
+
+  // Feedback
+  Object.entries(feedbackLogs).forEach(([id, f]) => {
+    const author = f.created_by && users[f.created_by] ? users[f.created_by] : null;
+    feedItems.push({
+      _type: 'feedback',
+      _ts: f.created_at || 0,
+      _icon: '💬',
+      _iconBg: 'rgba(184,140,255,0.15)',
+      _iconColor: 'var(--accent-purple)',
+      _borderColor: 'var(--accent-purple)',
+      _badge: 'FB',
+      _badgeBg: 'rgba(184,140,255,0.2)',
+      _badgeColor: 'var(--accent-purple)',
+      title: f.title,
+      desc: f.source ? `From: ${f.source}` : (f.target ? `対象: ${f.target}` : ''),
+      author,
+    });
+  });
+
+  // Risks/Issues (status changes — show all)
+  Object.entries(risksIssues).forEach(([id, r]) => {
+    const assignee = r.assignee_id && users[r.assignee_id] ? users[r.assignee_id] : null;
+    feedItems.push({
+      _type: 'risk',
+      _ts: r.created_at || 0,
+      _icon: '⚠',
+      _iconBg: 'rgba(240,136,62,0.15)',
+      _iconColor: 'var(--accent-orange)',
+      _borderColor: 'var(--accent-orange)',
+      _badge: 'リスク',
+      _badgeBg: 'rgba(240,136,62,0.2)',
+      _badgeColor: 'var(--accent-orange)',
+      title: r.title,
+      desc: `${r.type === 'risk' ? 'リスク' : '課題'} · ${r.status || '未対応'}`,
+      author: assignee,
+    });
+  });
+
+  // Milestones (completed)
+  Object.entries(milestones).forEach(([id, m]) => {
+    if (m.status === '完了') {
+      const assignee = m.assignee_id && users[m.assignee_id] ? users[m.assignee_id] : null;
+      feedItems.push({
+        _type: 'milestone',
+        _ts: m.actual_date ? new Date(m.actual_date + 'T00:00:00').getTime() : (m.created_at || 0),
+        _icon: '🏁',
+        _iconBg: 'rgba(90,173,255,0.15)',
+        _iconColor: 'var(--accent-blue)',
+        _borderColor: 'var(--accent-blue)',
+        _badge: 'マイルストーン',
+        _badgeBg: 'rgba(90,173,255,0.2)',
+        _badgeColor: 'var(--accent-blue)',
+        title: m.title,
+        desc: m.actual_date ? `完了: ${m.actual_date}` : '完了',
+        author: assignee,
+      });
+    }
+  });
+
+  // Sort by timestamp descending, take top 15
+  feedItems.sort((a, b) => b._ts - a._ts);
+  const top15 = feedItems.slice(0, 15);
 
   const feed = document.getElementById('activityFeed');
-  if (allDecisions.length === 0) {
+  if (top15.length === 0) {
     feed.innerHTML = '<div class="activity-empty">まだアクティビティはありません</div>';
     return;
   }
 
-  feed.innerHTML = allDecisions.map(d => {
-    const author = d.decided_by && users[d.decided_by] ? users[d.decided_by] : null;
-    const dateStr = new Date(d.decided_at || d.created_at || Date.now()).toLocaleDateString('ja-JP', {
+  feed.innerHTML = top15.map(item => {
+    const dateStr = item._ts ? new Date(item._ts).toLocaleDateString('ja-JP', {
       month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'
-    });
-    const topicTitle = d.topic_id && planningTopics[d.topic_id] ? planningTopics[d.topic_id].title : '';
+    }) : '';
     return `
-      <div class="activity-item">
-        <div class="activity-icon" style="background:rgba(66,199,96,0.15);color:var(--accent-green);">✓</div>
+      <div class="activity-item" style="border-left:3px solid ${item._borderColor};padding-left:11px;">
+        <div class="activity-icon" style="background:${item._iconBg};color:${item._iconColor};">${item._icon}</div>
         <div class="activity-body">
-          <div class="activity-title">決定: ${escHtml(d.title)}</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span class="activity-type-badge" style="background:${item._badgeBg};color:${item._badgeColor};">${item._badge}</span>
+            <span class="activity-title">${escHtml(item.title)}</span>
+          </div>
           <div class="activity-meta">
-            ${author ? escHtml(author.name) + ' · ' : ''}${dateStr}
-            ${topicTitle ? ' · 関連: ' + escHtml(topicTitle) : ''}
+            ${item.desc ? escHtml(item.desc) + ' · ' : ''}${item.author ? escHtml(item.author.name) + ' · ' : ''}${dateStr}
           </div>
         </div>
+        ${item.author && item.author.avatar ? `<img src="${escHtml(item.author.avatar)}" style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border);flex-shrink:0;" alt="">` : ''}
       </div>`;
   }).join('');
 }
@@ -3181,7 +3691,7 @@ function switchRecordsSubTab(tab, el) {
   document.querySelectorAll('.records-sub-tab').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.querySelectorAll('.records-sub-pane').forEach(p => p.classList.remove('active'));
-  const paneMap = { decisions: 'subPaneDecisions', risks: 'subPaneRisks', stakeholders: 'subPaneStakeholders' };
+  const paneMap = { decisions: 'subPaneDecisions', risks: 'subPaneRisks', stakeholders: 'subPaneStakeholders', feedback: 'subPaneFeedback', budget: 'subPaneBudget' };
   document.getElementById(paneMap[tab]).classList.add('active');
 }
 
@@ -3753,6 +4263,337 @@ async function deleteStakeholder() {
   } catch (e) { toast('エラー: ' + e.message); }
 }
 
+// ============ FEEDBACK LOGS ============
+function listenFeedbackLogs() {
+  db.ref('feedback_logs').on('value', snap => {
+    feedbackLogs = snap.val() || {};
+    renderFeedback();
+    renderOverview();
+  });
+}
+
+function filterFeedbackType(type, el) {
+  feedbackFilter.type = type;
+  el.closest('.topics-toolbar').querySelectorAll('[data-fb-type]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderFeedback();
+}
+
+function filterFeedbackAction(action, el) {
+  feedbackFilter.action = action;
+  el.closest('.topics-toolbar').querySelectorAll('[data-fb-action]').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderFeedback();
+}
+
+function renderFeedback() {
+  const list = document.getElementById('feedbackList');
+  let items = Object.entries(feedbackLogs).map(([id, f]) => ({ id, ...f }));
+
+  if (feedbackFilter.type !== 'all') items = items.filter(f => f.type === feedbackFilter.type);
+  if (feedbackFilter.action !== 'all') items = items.filter(f => f.action_status === feedbackFilter.action);
+
+  // Newest first
+  items.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+
+  if (items.length === 0) {
+    list.innerHTML = '<div class="feedback-empty">フィードバックはまだありません</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(f => {
+    const creator = f.created_by && users[f.created_by] ? users[f.created_by] : null;
+    const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) : '';
+
+    return `
+      <div class="feedback-card" onclick="openFeedbackDetail('${f.id}')">
+        <div class="feedback-header">
+          <span class="feedback-title">${escHtml(f.title)}</span>
+          <span class="fb-type-badge fbt-${escHtml(f.type || 'パイロット結果')}">${escHtml(f.type || 'パイロット結果')}</span>
+          <span class="fb-action-badge fba-${escHtml(f.action_status || '未対応')}">${escHtml(f.action_status || '未対応')}</span>
+        </div>
+        ${f.content ? `<div class="feedback-content">${escHtml(f.content)}</div>` : ''}
+        <div class="feedback-meta">
+          ${f.source ? `<span>From: ${escHtml(f.source)}</span>` : ''}
+          ${f.target ? `<span>対象: ${escHtml(f.target)}</span>` : ''}
+          ${creator ? `<span>${escHtml(creator.name)}</span>` : ''}
+          ${dateStr ? `<span>${dateStr}</span>` : ''}
+          ${f.action_taken ? `<span>対応: ${escHtml(f.action_taken).substring(0, 40)}${f.action_taken.length > 40 ? '...' : ''}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openFeedbackCreateModal() {
+  editingFeedbackId = null;
+  document.getElementById('feedbackModalTitle').textContent = 'フィードバックを追加';
+  document.getElementById('feedbackSubmitBtn').textContent = '追加';
+  document.getElementById('feedbackDeleteBtn').style.display = 'none';
+  document.getElementById('feedbackTitleInput').value = '';
+  document.getElementById('feedbackTypeInput').value = 'パイロット結果';
+  document.getElementById('feedbackSourceInput').value = '';
+  document.getElementById('feedbackTargetInput').value = '';
+  document.getElementById('feedbackContentInput').value = '';
+  document.getElementById('feedbackActionStatusInput').value = '未対応';
+  document.getElementById('feedbackActionTakenInput').value = '';
+  openModal('feedbackModal');
+  setTimeout(() => document.getElementById('feedbackTitleInput').focus(), 100);
+}
+
+function openFeedbackEditModal(id) {
+  const f = feedbackLogs[id];
+  if (!f) return;
+  editingFeedbackId = id;
+  document.getElementById('feedbackModalTitle').textContent = 'フィードバックを編集';
+  document.getElementById('feedbackSubmitBtn').textContent = '保存';
+  document.getElementById('feedbackDeleteBtn').style.display = '';
+  document.getElementById('feedbackTitleInput').value = f.title || '';
+  document.getElementById('feedbackTypeInput').value = f.type || 'パイロット結果';
+  document.getElementById('feedbackSourceInput').value = f.source || '';
+  document.getElementById('feedbackTargetInput').value = f.target || '';
+  document.getElementById('feedbackContentInput').value = f.content || '';
+  document.getElementById('feedbackActionStatusInput').value = f.action_status || '未対応';
+  document.getElementById('feedbackActionTakenInput').value = f.action_taken || '';
+  openModal('feedbackModal');
+}
+
+async function submitFeedback() {
+  const title = document.getElementById('feedbackTitleInput').value.trim();
+  if (!title) { document.getElementById('feedbackTitleInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const data = {
+    title,
+    type: document.getElementById('feedbackTypeInput').value,
+    source: document.getElementById('feedbackSourceInput').value.trim() || null,
+    target: document.getElementById('feedbackTargetInput').value.trim() || null,
+    content: document.getElementById('feedbackContentInput').value.trim() || null,
+    action_status: document.getElementById('feedbackActionStatusInput').value,
+    action_taken: document.getElementById('feedbackActionTakenInput').value.trim() || null,
+  };
+
+  try {
+    if (editingFeedbackId) {
+      await db.ref(`feedback_logs/${editingFeedbackId}`).update(data);
+      toast('フィードバックを更新しました');
+    } else {
+      data.created_by = currentUser.uid;
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('feedback_logs').push(data);
+      toast('フィードバックを追加しました');
+    }
+    closeModal('feedbackModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteFeedback() {
+  if (!editingFeedbackId) return;
+  try {
+    await db.ref(`feedback_logs/${editingFeedbackId}`).remove();
+    toast('フィードバックを削除しました');
+    closeModal('feedbackModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+function openFeedbackDetail(id) {
+  viewingFeedbackId = id;
+  const f = feedbackLogs[id];
+  if (!f) return;
+
+  const creator = f.created_by && users[f.created_by] ? users[f.created_by] : null;
+  const dateStr = f.created_at ? new Date(f.created_at).toLocaleDateString('ja-JP', { year: 'numeric', month: 'numeric', day: 'numeric' }) : '';
+
+  const body = document.getElementById('feedbackDetailBody');
+  body.innerHTML = `
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <span class="fb-type-badge fbt-${escHtml(f.type || 'パイロット結果')}">${escHtml(f.type || 'パイロット結果')}</span>
+        <span class="fb-action-badge fba-${escHtml(f.action_status || '未対応')}">${escHtml(f.action_status || '未対応')}</span>
+      </div>
+      <h3 style="font-size:18px;font-weight:600;margin-bottom:12px;">${escHtml(f.title)}</h3>
+      ${f.content ? `<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">内容</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;">${escHtml(f.content)}</p></div>` : ''}
+      ${f.action_taken ? `<div style="margin-bottom:12px;"><div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px;">対応内容</div><p style="font-size:13px;color:var(--text-secondary);line-height:1.6;white-space:pre-wrap;">${escHtml(f.action_taken)}</p></div>` : ''}
+      <div style="display:flex;gap:16px;margin-top:12px;font-size:12px;color:var(--text-muted);flex-wrap:wrap;">
+        ${f.source ? `<span>情報源: ${escHtml(f.source)}</span>` : ''}
+        ${f.target ? `<span>対象: ${escHtml(f.target)}</span>` : ''}
+        ${creator ? `<span>記録者: ${escHtml(creator.name)}</span>` : ''}
+        ${dateStr ? `<span>記録日: ${dateStr}</span>` : ''}
+      </div>
+    </div>`;
+
+  openModal('feedbackDetailModal');
+}
+
+function editFeedbackFromDetail() {
+  if (!viewingFeedbackId) return;
+  closeModal('feedbackDetailModal');
+  openFeedbackEditModal(viewingFeedbackId);
+}
+
+// ============ BUDGETS ============
+function listenBudgets() {
+  db.ref('budgets').on('value', snap => {
+    budgets = snap.val() || {};
+    renderBudget();
+    renderOverview();
+  });
+}
+
+function formatYen(num) {
+  if (num == null || isNaN(num)) return '¥0';
+  return '¥' + Number(num).toLocaleString('ja-JP');
+}
+
+function renderBudget() {
+  const summaryEl = document.getElementById('budgetSummaryBar');
+  const list = document.getElementById('budgetList');
+  let items = Object.entries(budgets).map(([id, b]) => ({ id, ...b }));
+
+  // Sort by category
+  const catOrder = { '教材開発': 0, '会場費': 1, 'ツール費': 2, '外部講師': 3, '人件費': 4, 'その他': 5 };
+  items.sort((a, b) => (catOrder[a.category] ?? 5) - (catOrder[b.category] ?? 5));
+
+  if (items.length === 0) {
+    summaryEl.style.display = 'none';
+    list.innerHTML = '<div class="budget-empty">予算項目はまだありません</div>';
+    return;
+  }
+
+  // Summary
+  const totalEstimated = items.reduce((s, b) => s + (Number(b.estimated) || 0), 0);
+  const totalActual = items.reduce((s, b) => s + (Number(b.actual) || 0), 0);
+  const variance = totalEstimated - totalActual;
+  const varianceColor = variance >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+  const maxVal = Math.max(totalEstimated, totalActual, 1);
+  const estPct = (totalEstimated / maxVal) * 100;
+  const actPct = (totalActual / maxVal) * 100;
+  const actBarColor = totalActual > totalEstimated ? 'rgba(248,81,73,0.7)' : 'rgba(90,173,255,0.7)';
+
+  summaryEl.style.display = '';
+  summaryEl.innerHTML = `
+    <div class="budget-summary-row">
+      <div class="budget-summary-item">
+        <div class="budget-summary-label">見積合計</div>
+        <div class="budget-summary-value">${formatYen(totalEstimated)}</div>
+      </div>
+      <div class="budget-summary-item">
+        <div class="budget-summary-label">実績合計</div>
+        <div class="budget-summary-value">${formatYen(totalActual)}</div>
+      </div>
+      <div class="budget-summary-item">
+        <div class="budget-summary-label">差異</div>
+        <div class="budget-summary-value" style="color:${varianceColor}">${variance >= 0 ? '+' : ''}${formatYen(variance)}</div>
+      </div>
+    </div>
+    <div class="budget-bar-container">
+      <div class="budget-bar-estimated" style="width:${estPct}%"></div>
+      <div class="budget-bar-actual" style="width:${actPct}%;background:${actBarColor}"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:10px;color:var(--text-muted);">
+      <span>見積 (緑)</span><span>実績 (${totalActual > totalEstimated ? '赤' : '青'})</span>
+    </div>`;
+
+  list.innerHTML = items.map(b => {
+    const assignee = b.assignee_id && users[b.assignee_id] ? users[b.assignee_id] : null;
+    const est = Number(b.estimated) || 0;
+    const act = Number(b.actual) || 0;
+    const diff = est - act;
+    const diffColor = diff >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
+    return `
+      <div class="budget-card" onclick="openBudgetEditModal('${b.id}')">
+        <div class="budget-header">
+          <span class="budget-item-name">${escHtml(b.item)}</span>
+          <span class="budget-cat-badge bc-${escHtml(b.category || 'その他')}">${escHtml(b.category || 'その他')}</span>
+        </div>
+        <div class="budget-amounts">
+          <span>見積: ${formatYen(est)}</span>
+          <span>実績: ${formatYen(act)}</span>
+          <span style="color:${diffColor}">差異: ${diff >= 0 ? '+' : ''}${formatYen(diff)}</span>
+        </div>
+        <div class="budget-meta">
+          ${assignee ? `<span class="topic-assignee"><img src="${escHtml(assignee.avatar)}" alt="">${escHtml(assignee.name)}</span>` : ''}
+          ${b.memo ? `<span>${escHtml(b.memo)}</span>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function openBudgetCreateModal() {
+  editingBudgetId = null;
+  document.getElementById('budgetModalTitle').textContent = '予算項目を追加';
+  document.getElementById('budgetSubmitBtn').textContent = '追加';
+  document.getElementById('budgetDeleteBtn').style.display = 'none';
+  document.getElementById('budgetItemInput').value = '';
+  document.getElementById('budgetCategoryInput').value = '教材開発';
+  document.getElementById('budgetEstimatedInput').value = '';
+  document.getElementById('budgetActualInput').value = '';
+  document.getElementById('budgetAssigneeInput').value = '';
+  document.getElementById('budgetMemoInput').value = '';
+  updateBudgetAssigneeOptions();
+  openModal('budgetModal');
+  setTimeout(() => document.getElementById('budgetItemInput').focus(), 100);
+}
+
+function openBudgetEditModal(id) {
+  const b = budgets[id];
+  if (!b) return;
+  editingBudgetId = id;
+  document.getElementById('budgetModalTitle').textContent = '予算項目を編集';
+  document.getElementById('budgetSubmitBtn').textContent = '保存';
+  document.getElementById('budgetDeleteBtn').style.display = '';
+  document.getElementById('budgetItemInput').value = b.item || '';
+  document.getElementById('budgetCategoryInput').value = b.category || '教材開発';
+  document.getElementById('budgetEstimatedInput').value = b.estimated || '';
+  document.getElementById('budgetActualInput').value = b.actual || '';
+  document.getElementById('budgetAssigneeInput').value = b.assignee_id || '';
+  document.getElementById('budgetMemoInput').value = b.memo || '';
+  updateBudgetAssigneeOptions();
+  openModal('budgetModal');
+}
+
+function updateBudgetAssigneeOptions() {
+  const sel = document.getElementById('budgetAssigneeInput');
+  const v = sel.value;
+  sel.innerHTML = '<option value="">未割り当て</option>' +
+    Object.entries(users).map(([uid, u]) => `<option value="${uid}">${escHtml(u.name)}</option>`).join('');
+  sel.value = v;
+}
+
+async function submitBudget() {
+  const item = document.getElementById('budgetItemInput').value.trim();
+  if (!item) { document.getElementById('budgetItemInput').style.borderColor = 'var(--accent-red)'; return; }
+
+  const data = {
+    item,
+    category: document.getElementById('budgetCategoryInput').value,
+    estimated: Number(document.getElementById('budgetEstimatedInput').value) || 0,
+    actual: Number(document.getElementById('budgetActualInput').value) || 0,
+    assignee_id: document.getElementById('budgetAssigneeInput').value || null,
+    memo: document.getElementById('budgetMemoInput').value.trim() || null,
+  };
+
+  try {
+    if (editingBudgetId) {
+      await db.ref(`budgets/${editingBudgetId}`).update(data);
+      toast('予算項目を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      await db.ref('budgets').push(data);
+      toast('予算項目を追加しました');
+    }
+    closeModal('budgetModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
+async function deleteBudget() {
+  if (!editingBudgetId) return;
+  try {
+    await db.ref(`budgets/${editingBudgetId}`).remove();
+    toast('予算項目を削除しました');
+    closeModal('budgetModal');
+  } catch (e) { toast('エラー: ' + e.message); }
+}
+
 // ============ RENDER (TASKS) ============
 function renderBoard() {
   const columns = { todo: [], doing: [], done: [] };
@@ -4136,6 +4977,14 @@ function closeModal(id) {
     editingStakeholderId = null;
     document.getElementById('stakeholderNameInput').style.borderColor = '';
   }
+  if (id === 'feedbackModal') {
+    editingFeedbackId = null;
+    document.getElementById('feedbackTitleInput').style.borderColor = '';
+  }
+  if (id === 'budgetModal') {
+    editingBudgetId = null;
+    document.getElementById('budgetItemInput').style.borderColor = '';
+  }
 }
 
 function toggleColumn(headerEl) {
@@ -4176,6 +5025,9 @@ document.addEventListener('keydown', e => {
     closeModal('deliverableModal');
     closeModal('riskModal');
     closeModal('stakeholderModal');
+    closeModal('feedbackModal');
+    closeModal('feedbackDetailModal');
+    closeModal('budgetModal');
     document.getElementById('membersPanel').classList.remove('active');
   }
 });
