@@ -2971,9 +2971,13 @@ function showApp() {
     avatarEl.style.display = 'none';
   }
 
+  // Set up presence
+  setupPresence();
+
   // Start listening
   listenTasks();
   listenUsers();
+  listenPresence();
   listenPlanningTopics();
   listenDecisions();
   listenMilestones();
@@ -4686,6 +4690,26 @@ function updateStats() {
   document.getElementById('statDone').textContent = all.filter(t => t.status === 'done').length;
 }
 
+let onlineUsers = {};
+
+function setupPresence() {
+  const presRef = db.ref(`presence/${currentUser.uid}`);
+  const connRef = db.ref('.info/connected');
+  connRef.on('value', snap => {
+    if (snap.val() === true) {
+      presRef.set({ name: currentUser.name, avatar: currentUser.avatar, since: firebase.database.ServerValue.TIMESTAMP });
+      presRef.onDisconnect().remove();
+    }
+  });
+}
+
+function listenPresence() {
+  db.ref('presence').on('value', snap => {
+    onlineUsers = snap.val() || {};
+    renderMembers();
+  });
+}
+
 function renderMembers() {
   const list = document.getElementById('membersList');
   const entries = Object.entries(users);
@@ -4693,14 +4717,25 @@ function renderMembers() {
     list.innerHTML = '<div class="column-empty">メンバーなし</div>';
     return;
   }
+  // Sort: online first, then by last_login descending
+  entries.sort((a, b) => {
+    const aOnline = onlineUsers[a[0]] ? 1 : 0;
+    const bOnline = onlineUsers[b[0]] ? 1 : 0;
+    if (aOnline !== bOnline) return bOnline - aOnline;
+    return (b[1].last_login || 0) - (a[1].last_login || 0);
+  });
   list.innerHTML = entries.map(([uid, u]) => {
-    const lastLogin = u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }) : '';
+    const isOnline = !!onlineUsers[uid];
+    const lastLogin = u.last_login ? new Date(u.last_login).toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric' }) + ' ' + new Date(u.last_login).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '';
     return `
       <div class="member-item">
-        ${u.avatar ? `<img class="member-avatar" src="${escHtml(u.avatar)}" alt="">` : '<div class="member-avatar" style="background:var(--bg-card)"></div>'}
+        <div style="position:relative">
+          ${u.avatar ? `<img class="member-avatar" src="${escHtml(u.avatar)}" alt="">` : '<div class="member-avatar" style="background:var(--bg-card)"></div>'}
+          ${isOnline ? '<span style="position:absolute;bottom:0;right:0;width:10px;height:10px;border-radius:50%;background:var(--accent-green);border:2px solid var(--bg-secondary)"></span>' : ''}
+        </div>
         <div>
           <div class="member-name">${escHtml(u.name)}</div>
-          <div class="member-status">最終ログイン: ${lastLogin}</div>
+          <div class="member-status">${isOnline ? '<span style="color:var(--accent-green)">● ログイン中</span>' : `最終ログイン: ${lastLogin}`}</div>
         </div>
       </div>`;
   }).join('');
