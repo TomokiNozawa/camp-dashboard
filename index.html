@@ -1969,6 +1969,123 @@ html, body {
   font-size: 12px;
   color: var(--text-secondary);
 }
+
+/* ============ QUICK SEARCH (Ctrl+K) ============ */
+.quick-search-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 260;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 80px 20px 20px;
+}
+.quick-search-overlay.active { display: flex; }
+
+.quick-search-modal {
+  background: var(--bg-modal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 560px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 480px;
+}
+
+.quick-search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.quick-search-icon {
+  color: var(--text-muted);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.quick-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-primary);
+}
+.quick-search-input::placeholder { color: var(--text-muted); }
+
+.quick-search-results {
+  overflow-y: auto;
+  padding: 8px 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.quick-search-group-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  padding: 8px 18px 4px;
+}
+
+.quick-search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.quick-search-item:hover,
+.quick-search-item.selected {
+  background: var(--bg-card-hover);
+}
+
+.quick-search-type-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.qs-badge-task { background: rgba(90,173,255,0.15); color: var(--accent-blue); }
+.qs-badge-topic { background: rgba(184,140,255,0.15); color: var(--accent-purple); }
+.qs-badge-decision { background: rgba(66,199,96,0.15); color: var(--accent-green); }
+.qs-badge-milestone { background: rgba(232,184,64,0.15); color: var(--accent-yellow); }
+.qs-badge-deliverable { background: rgba(240,136,62,0.15); color: var(--accent-orange); }
+.qs-badge-risk { background: rgba(248,81,73,0.15); color: var(--accent-red); }
+.qs-badge-feedback { background: rgba(139,149,165,0.15); color: var(--text-secondary); }
+
+.quick-search-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-search-item-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.quick-search-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 20px;
+  font-size: 13px;
+}
 </style>
 </head>
 <body>
@@ -2958,6 +3075,35 @@ html, body {
         <div class="shortcut-keys"><span class="shortcut-key">?</span></div>
         <span class="shortcut-desc">このヘルプを表示</span>
       </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">;</span></div>
+        <span class="shortcut-desc">新規作成</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">K</span></div>
+        <span class="shortcut-desc">クイック検索</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Ctrl</span><span class="shortcut-key">/</span></div>
+        <span class="shortcut-desc">ショートカット一覧</span>
+      </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">F</span></div>
+        <span class="shortcut-desc">フィルタにフォーカス</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Search Modal (Ctrl+K) -->
+<div class="quick-search-overlay" id="quickSearchOverlay" onclick="if(event.target===this)closeQuickSearch()">
+  <div class="quick-search-modal">
+    <div class="quick-search-input-wrap">
+      <span class="quick-search-icon">&#128269;</span>
+      <input class="quick-search-input" id="quickSearchInput" type="text" placeholder="検索..." autocomplete="off">
+    </div>
+    <div class="quick-search-results" id="quickSearchResults">
+      <div class="quick-search-empty">検索ワードを入力してください</div>
     </div>
   </div>
 </div>
@@ -5416,6 +5562,143 @@ function onSummaryCardClick(type) {
   }
 }
 
+// ============ QUICK SEARCH (Ctrl+K) ============
+let quickSearchSelectedIdx = -1;
+let quickSearchResults = [];
+
+function openQuickSearch() {
+  const overlay = document.getElementById('quickSearchOverlay');
+  overlay.classList.add('active');
+  const input = document.getElementById('quickSearchInput');
+  input.value = '';
+  quickSearchSelectedIdx = -1;
+  quickSearchResults = [];
+  document.getElementById('quickSearchResults').innerHTML = '<div class="quick-search-empty">検索ワードを入力してください</div>';
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeQuickSearch() {
+  document.getElementById('quickSearchOverlay').classList.remove('active');
+}
+
+function performQuickSearch(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    quickSearchResults = [];
+    quickSearchSelectedIdx = -1;
+    document.getElementById('quickSearchResults').innerHTML = '<div class="quick-search-empty">検索ワードを入力してください</div>';
+    return;
+  }
+
+  const results = [];
+  const typeConfigs = [
+    { data: tasks, type: 'task', label: 'タスク', badge: 'qs-badge-task', titleKey: 'title', statusKey: 'status', tab: 'tasks' },
+    { data: planningTopics, type: 'topic', label: '検討事項', badge: 'qs-badge-topic', titleKey: 'title', statusKey: 'status', tab: 'topics' },
+    { data: decisions, type: 'decision', label: '意思決定', badge: 'qs-badge-decision', titleKey: 'title', statusKey: 'status', tab: 'records', subTab: 'decisions' },
+    { data: milestones, type: 'milestone', label: 'マイルストーン', badge: 'qs-badge-milestone', titleKey: 'title', statusKey: 'status', tab: 'timeline' },
+    { data: deliverables, type: 'deliverable', label: '成果物', badge: 'qs-badge-deliverable', titleKey: 'title', statusKey: 'status', tab: 'timeline' },
+    { data: risksIssues, type: 'risk', label: 'リスク課題', badge: 'qs-badge-risk', titleKey: 'title', statusKey: 'status', tab: 'records', subTab: 'risks' },
+    { data: feedbackLogs, type: 'feedback', label: 'FB', badge: 'qs-badge-feedback', titleKey: 'title', statusKey: 'action_status', tab: 'records', subTab: 'feedback' },
+  ];
+
+  for (const cfg of typeConfigs) {
+    for (const [id, item] of Object.entries(cfg.data || {})) {
+      const title = item[cfg.titleKey] || '';
+      if (title.toLowerCase().includes(q)) {
+        results.push({
+          id, type: cfg.type, label: cfg.label, badge: cfg.badge,
+          title, status: item[cfg.statusKey] || '',
+          tab: cfg.tab, subTab: cfg.subTab
+        });
+        if (results.length >= 10) break;
+      }
+    }
+    if (results.length >= 10) break;
+  }
+
+  quickSearchResults = results;
+  quickSearchSelectedIdx = results.length > 0 ? 0 : -1;
+  renderQuickSearchResults();
+}
+
+function renderQuickSearchResults() {
+  const container = document.getElementById('quickSearchResults');
+  if (quickSearchResults.length === 0) {
+    container.innerHTML = '<div class="quick-search-empty">見つかりませんでした</div>';
+    return;
+  }
+
+  let html = '';
+  let lastType = '';
+  quickSearchResults.forEach((r, i) => {
+    if (r.type !== lastType) {
+      html += `<div class="quick-search-group-label">${escHtml(r.label)}</div>`;
+      lastType = r.type;
+    }
+    html += `<div class="quick-search-item${i === quickSearchSelectedIdx ? ' selected' : ''}" data-idx="${i}" onclick="openQuickSearchResult(${i})">
+      <span class="quick-search-type-badge ${r.badge}">${escHtml(r.label)}</span>
+      <span class="quick-search-item-title">${escHtml(r.title)}</span>
+      <span class="quick-search-item-status">${escHtml(r.status)}</span>
+    </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function openQuickSearchResult(idx) {
+  const r = quickSearchResults[idx];
+  if (!r) return;
+  closeQuickSearch();
+
+  // Navigate to correct tab
+  const tabEl = document.querySelector(`.tab-item[data-tab="${r.tab}"]`);
+  if (tabEl) switchTab(r.tab, tabEl);
+
+  // Switch sub-tab if needed
+  if (r.subTab) {
+    const subTabEl = document.querySelector(`.records-sub-tab[data-records-tab="${r.subTab}"]`);
+    if (subTabEl) switchRecordsSubTab(r.subTab, subTabEl);
+  }
+
+  // Open the appropriate detail/edit modal
+  setTimeout(() => {
+    if (r.type === 'task') { editingTaskId = r.id; openEditModal(r.id); }
+    else if (r.type === 'topic') { openTopicDetail(r.id); }
+    else if (r.type === 'decision') { openDecisionDetail(r.id); }
+    else if (r.type === 'milestone') { editingMilestoneId = r.id; openMilestoneEditModal(r.id); }
+    else if (r.type === 'deliverable') { editingDeliverableId = r.id; openDeliverableEditModal(r.id); }
+    else if (r.type === 'risk') { editingRiskId = r.id; openRiskEditModal(r.id); }
+    else if (r.type === 'feedback') { openFeedbackDetail(r.id); }
+  }, 100);
+}
+
+document.getElementById('quickSearchInput').addEventListener('input', e => {
+  performQuickSearch(e.target.value);
+});
+
+document.getElementById('quickSearchInput').addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (quickSearchResults.length > 0) {
+      quickSearchSelectedIdx = (quickSearchSelectedIdx + 1) % quickSearchResults.length;
+      renderQuickSearchResults();
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (quickSearchResults.length > 0) {
+      quickSearchSelectedIdx = (quickSearchSelectedIdx - 1 + quickSearchResults.length) % quickSearchResults.length;
+      renderQuickSearchResults();
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (quickSearchSelectedIdx >= 0) {
+      openQuickSearchResult(quickSearchSelectedIdx);
+    }
+  } else if (e.key === 'Escape') {
+    e.preventDefault();
+    closeQuickSearch();
+  }
+});
+
 // Close modals on Escape / overlay click
 const TAB_ORDER = ['overview', 'topics', 'tasks', 'timeline', 'records'];
 
@@ -5447,6 +5730,41 @@ document.addEventListener('keydown', e => {
     if (tabEl) switchTab(TAB_ORDER[nextIdx], tabEl);
     return;
   }
+  // Ctrl+; : New item creation (context-aware)
+  if (e.ctrlKey && e.key === ';') {
+    e.preventDefault();
+    handleFabClick();
+    return;
+  }
+  // Ctrl+K : Quick search
+  if (e.ctrlKey && e.key === 'k') {
+    e.preventDefault();
+    openQuickSearch();
+    return;
+  }
+  // Ctrl+/ : Toggle shortcut help
+  if (e.ctrlKey && e.key === '/') {
+    e.preventDefault();
+    toggleShortcutHelp();
+    return;
+  }
+  // F : Focus filter (when not in input, on topics or tasks tab)
+  if (e.key === 'f' && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    const tag = document.activeElement?.tagName;
+    if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+      if (activeTab === 'topics') {
+        e.preventDefault();
+        const firstChip = document.querySelector('#paneTopics .filter-chip');
+        if (firstChip) firstChip.focus();
+        return;
+      } else if (activeTab === 'tasks') {
+        e.preventDefault();
+        const firstChip = document.querySelector('#paneTasks .filter-chip');
+        if (firstChip) firstChip.focus();
+        return;
+      }
+    }
+  }
   // ? key: toggle shortcut help (only when not focused on input)
   if (e.key === '?' && !e.altKey && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement?.tagName;
@@ -5457,6 +5775,7 @@ document.addEventListener('keydown', e => {
     }
   }
   if (e.key === 'Escape') {
+    closeQuickSearch();
     closeShortcutHelp();
     closeModal('taskModal');
     closeDeleteModal();
