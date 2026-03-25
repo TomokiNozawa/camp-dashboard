@@ -3103,6 +3103,10 @@ html, body {
         <div class="shortcut-keys"><span class="shortcut-key">F</span></div>
         <span class="shortcut-desc">フィルタにフォーカス</span>
       </div>
+      <div class="shortcut-row">
+        <div class="shortcut-keys"><span class="shortcut-key">Alt</span><span class="shortcut-key">&larr;</span>/<span class="shortcut-key">&rarr;</span></div>
+        <span class="shortcut-desc">記録サブタブ切替</span>
+      </div>
     </div>
   </div>
 </div>
@@ -5893,6 +5897,18 @@ document.addEventListener('keydown', e => {
     const tabName = TAB_ORDER[idx];
     const tabEl = document.querySelector(`.tab-item[data-tab="${tabName}"]`);
     if (tabEl) switchTab(tabName, tabEl);
+    return;
+  }
+  // Alt + Left/Right: previous/next records sub-tab (when on records tab)
+  if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && activeTab === 'records') {
+    e.preventDefault();
+    const SUB_ORDER = ['decisions', 'risks', 'stakeholders', 'feedback', 'budget'];
+    const idx = SUB_ORDER.indexOf(activeRecordsSubTab);
+    const newIdx = e.key === 'ArrowLeft'
+      ? (idx - 1 + SUB_ORDER.length) % SUB_ORDER.length
+      : (idx + 1) % SUB_ORDER.length;
+    const subEl = document.querySelector(`.records-sub-tab[data-records-tab="${SUB_ORDER[newIdx]}"]`);
+    if (subEl) switchRecordsSubTab(SUB_ORDER[newIdx], subEl);
     return;
   }
   // Alt + ArrowUp: previous tab
