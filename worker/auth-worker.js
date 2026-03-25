@@ -284,8 +284,8 @@ async function handleSlackEvent(request, env) {
       fbData = {
         title,
         context: `Slack: ${authorName} (${now})\n${msgText.substring(0, 500)}`,
-        category: '未分類',
-        status: '未着手',
+        category: '\u672a\u5206\u985e',
+        status: '\u672a\u7740\u624b',
         priority: 'medium',
         assignee_id: null,
         due_date: null,
@@ -303,7 +303,7 @@ async function handleSlackEvent(request, env) {
         type: 'issue',
         impact: 'medium',
         likelihood: null,
-        status: '未対応',
+        status: '\u672a\u5bfe\u5fdc',
         mitigation: '',
         assignee_id: null,
         due_date: null,
@@ -323,7 +323,7 @@ async function handleSlackEvent(request, env) {
         decided_by: reactUser,
         topic_id: null,
         impact_areas: '',
-        status: '有効',
+        status: '\u6709\u52b9',
         source: 'slack',
         slack_link: slackLink,
         created_at: { '.sv': 'timestamp' },
@@ -339,8 +339,8 @@ async function handleSlackEvent(request, env) {
     const fbResult = await fbRes.json();
 
     // Reply in Slack thread
-    const labels = { tasks: 'タスク', planning_topics: '検討事項', risks_issues: 'リスク/課題', decisions: '意思決定' };
-    const replyText = `${labels[mapping.target]}に登録しました\nタイトル: ${title}\n→ <https://tomokinozawa.github.io/camp-dashboard/|Dashboard で確認>`;
+    const labels = { tasks: '\u30bf\u30b9\u30af', planning_topics: '\u691c\u8a0e\u4e8b\u9805', risks_issues: '\u30ea\u30b9\u30af/\u8ab2\u984c', decisions: '\u610f\u601d\u6c7a\u5b9a' };
+    const replyText = labels[mapping.target] + '\u306b\u767b\u9332\u3057\u307e\u3057\u305f\n\u30bf\u30a4\u30c8\u30eb: ' + title + '\n\u2192 <https://tomokinozawa.github.io/camp-dashboard/|Dashboard \u3067\u78ba\u8a8d>';
 
     await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
