@@ -362,8 +362,15 @@ Respond in JSON only (no markdown, no explanation):
       } catch (e) { /* fallback to defaults */ }
     }
 
-    // Build the Slack message permalink
-    const slackLink = `https://slack.com/archives/${channel}/p${item.ts.replace('.', '')}`;
+    // Get proper Slack permalink via API
+    let slackLink = '';
+    try {
+      const plRes = await fetch(`https://slack.com/api/chat.getPermalink?channel=${channel}&message_ts=${item.ts}`, {
+        headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+      });
+      const plData = await plRes.json();
+      slackLink = plData.ok ? plData.permalink : '';
+    } catch (e) { /* fallback to empty */ }
     const now = new Date().toISOString().split('T')[0];
 
     // Write to Firebase
