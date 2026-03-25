@@ -1840,14 +1840,47 @@ html, body {
   font-size: 14px;
 }
 
+.user-menu {
+  display: none;
+  position: absolute;
+  top: 100%; right: 0;
+  margin-top: 8px;
+  background: var(--bg-modal);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  min-width: 140px;
+}
+.user-menu.active { display: block; }
+.user-menu-item {
+  display: block; width: 100%;
+  padding: 10px 16px;
+  background: none; border: none;
+  color: var(--text-secondary);
+  font-size: 13px; font-family: inherit;
+  cursor: pointer; text-align: left;
+  transition: var(--transition);
+}
+.user-menu-item:hover { background: var(--bg-card); color: var(--accent-red); }
+
 /* Drag hint */
 .drag-over { background: rgba(90,173,255,0.08); border-style: dashed; }
 </style>
 </head>
 <body>
 
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loadingScreen" class="screen active">
+  <div class="loading-screen">
+    <div class="login-logo">C</div>
+    <div class="loading-spinner"></div>
+    <div>読み込み中...</div>
+  </div>
+</div>
+
 <!-- ===== LOGIN SCREEN ===== -->
-<div id="loginScreen" class="screen active">
+<div id="loginScreen" class="screen">
   <div class="login-logo">C</div>
   <div class="login-title">Camp Dashboard</div>
   <div class="login-subtitle">Claude Cowork Camp の企画・タスク管理<br>チームメンバー限定</div>
@@ -1868,13 +1901,15 @@ html, body {
       <span class="header-title">Camp Dashboard</span>
     </div>
     <div class="header-right">
-      <div class="header-user">
-        <span class="header-user-name" id="headerUserName"></span>
-        <img class="header-avatar" id="headerAvatar" alt="">
-      </div>
       <button class="btn-icon" id="themeToggle" onclick="toggleTheme()" title="テーマ切替">☀</button>
       <button class="btn-icon" onclick="toggleMembers()" title="メンバー">👥</button>
-      <button class="btn-icon" onclick="logout()" title="ログアウト">⏻</button>
+      <div class="header-user" style="position:relative;cursor:pointer" onclick="toggleUserMenu()">
+        <span class="header-user-name" id="headerUserName"></span>
+        <img class="header-avatar" id="headerAvatar" alt="">
+        <div class="user-menu" id="userMenu">
+          <button class="user-menu-item" onclick="event.stopPropagation(); logout()">⏻ ログアウト</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -2958,7 +2993,12 @@ function logout() {
   showLogin();
 }
 
+function hideLoading() {
+  document.getElementById('loadingScreen').classList.remove('active');
+}
+
 function showLogin() {
+  hideLoading();
   document.getElementById('loginScreen').classList.add('active');
   document.getElementById('appScreen').classList.remove('active');
 }
@@ -2969,6 +3009,7 @@ function showLoginError(msg) {
 
 // ============ APP ============
 function showApp() {
+  hideLoading();
   document.getElementById('loginScreen').classList.remove('active');
   document.getElementById('appScreen').classList.add('active');
 
@@ -3824,7 +3865,7 @@ function renderPhaseIndicator() {
       <div class="phase-step ${cls}" onclick="setProjectPhase('${p.key}')">
         <div class="phase-circle">${p.num}</div>
         <div class="phase-label">P${p.num} ${p.label}</div>
-        ${i === currentIdx ? `<div style="font-size:10px;color:var(--accent-blue);margin-top:2px;text-align:center;max-width:100px">🎯 ${p.goal}</div>` : ''}
+        <div style="font-size:10px;color:${i === currentIdx ? 'var(--accent-blue)' : 'var(--text-muted)'};margin-top:2px;text-align:center;max-width:110px;line-height:1.3">${i === currentIdx ? '🎯 ' : ''}${p.goal}</div>
       </div>`;
   }).join('');
 }
@@ -5125,6 +5166,15 @@ function toggleColumn(headerEl) {
   if (window.innerWidth > 768) return;
   headerEl.closest('.kanban-column').classList.toggle('collapsed');
 }
+
+function toggleUserMenu() {
+  document.getElementById('userMenu').classList.toggle('active');
+}
+
+document.addEventListener('click', e => {
+  const menu = document.getElementById('userMenu');
+  if (menu && !e.target.closest('.header-user')) menu.classList.remove('active');
+});
 
 function toggleMembers() {
   document.getElementById('membersPanel').classList.toggle('active');
