@@ -102,12 +102,20 @@ html, body {
 }
 
 .login-logo {
-  width: 72px; height: 72px;
-  border-radius: 18px;
-  background: var(--gradient-brand);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; font-weight: 700; color: #fff;
-  box-shadow: 0 4px 24px rgba(90,173,255,0.3);
+  width: 120px; height: 48px;
+}
+.login-logo img, .header-logo img {
+  width: 100%; height: 100%; object-fit: contain;
+}
+.light .login-logo img, .light .header-logo img {
+  filter: none;
+}
+/* Dark mode: invert the dark logo to white */
+.login-logo img, .header-logo img {
+  filter: brightness(0) invert(1);
+}
+.light .login-logo img, .light .header-logo img {
+  filter: none;
 }
 
 .login-title {
@@ -175,11 +183,7 @@ html, body {
 }
 
 .header-logo {
-  width: 34px; height: 34px;
-  border-radius: 8px;
-  background: var(--gradient-brand);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: #fff;
+  width: 60px; height: 24px;
 }
 
 .header-title {
@@ -2111,7 +2115,7 @@ html, body {
 <!-- ===== LOADING SCREEN ===== -->
 <div id="loadingScreen" class="screen active" style="align-items:center;justify-content:center">
   <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
-    <div class="login-logo">C</div>
+    <div class="login-logo"><img src="logo.svg" alt="CCC"></div>
     <div class="loading-spinner"></div>
     <div style="color:var(--text-secondary);font-size:14px">読み込み中...</div>
   </div>
@@ -2119,7 +2123,7 @@ html, body {
 
 <!-- ===== LOGIN SCREEN ===== -->
 <div id="loginScreen" class="screen">
-  <div class="login-logo">C</div>
+  <div class="login-logo"><img src="logo.svg" alt="CCC"></div>
   <div class="login-title">Camp Dashboard</div>
   <div class="login-subtitle">Claude Cowork Camp の企画・タスク管理<br>チームメンバー限定</div>
   <button class="btn-slack" onclick="startSlackLogin()">
@@ -2135,7 +2139,7 @@ html, body {
   <!-- Header -->
   <header class="app-header">
     <div class="header-left">
-      <div class="header-logo">C</div>
+      <div class="header-logo"><img src="logo.svg" alt="CCC"></div>
       <span class="header-title">Camp Dashboard</span>
     </div>
     <div class="header-right">

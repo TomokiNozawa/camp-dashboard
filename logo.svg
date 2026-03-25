@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 120">
+  <style>
+    .c { fill: none; stroke: #1a2230; stroke-width: 22; stroke-linecap: round; }
+  </style>
+  <!-- Left C -->
+  <path class="c" d="M 95,20 A 45,45 0 1,0 95,100" />
+  <!-- Middle C (overlapping) -->
+  <path class="c" d="M 155,20 A 45,45 0 1,0 155,100" />
+  <!-- Right C (overlapping) -->
+  <path class="c" d="M 215,20 A 45,45 0 1,0 215,100" />
+</svg>
