@@ -3480,7 +3480,7 @@ function renderTopics() {
       <div class="topic-card" onclick="openTopicDetail('${t.id}')">
         <div class="topic-priority-bar" style="background:${priorityColor}"></div>
         <div class="topic-header">
-          <span class="topic-title">${escHtml(t.title)}</span>
+          <span class="topic-title">${t.source === 'slack' ? '<span title="Slackから登録" style="font-size:12px;margin-right:3px">💬</span>' : ''}${escHtml(t.title)}</span>
         </div>
         ${t.context ? `<div class="topic-context">${escHtml(t.context)}</div>` : ''}
         <div class="topic-meta">
@@ -4818,7 +4818,7 @@ function renderColumn(bodyId, countId, items) {
              onclick="openEditModal('${task.id}')">
           <div class="task-priority-bar" style="background:${priorityColor}"></div>
           <div class="task-header">
-            <span class="task-title">${escHtml(task.title)}</span>
+            <span class="task-title">${task.source === 'slack' ? '<span title="Slackから登録" style="font-size:12px;margin-right:3px">💬</span>' : ''}${escHtml(task.title)}</span>
             <div class="task-actions">
               <button class="task-action-btn" onclick="event.stopPropagation(); moveTask('${task.id}','${nextStatus}')" title="ステータス変更">${nextLabel}</button>
               <button class="task-action-btn danger" onclick="event.stopPropagation(); openDeleteModal('${task.id}')" title="削除">🗑</button>

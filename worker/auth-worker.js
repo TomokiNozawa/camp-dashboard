@@ -13,6 +13,7 @@ export default {
     try {
       if (url.pathname === "/auth/start") return handleAuthStart(url, env);
       if (url.pathname === "/auth/callback") return handleAuthCallback(url, request, env);
+      if (url.pathname === "/slack/events" && request.method === "POST") return handleSlackEvent(request, env);
       if (url.pathname === "/health") return json({ status: "ok" });
       return new Response("Not Found", { status: 404 });
     } catch (e) {
@@ -206,6 +207,158 @@ function base64url(input) {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// ============ SLACK EVENT API ============
+const REACTION_MAP = {
+  clipboard: { target: 'tasks', label: 'task' },
+  thinking_face: { target: 'planning_topics', label: 'topic' },
+  warning: { target: 'risks_issues', label: 'risk' },
+  white_check_mark: { target: 'decisions', label: 'decision' },
+};
+
+async function handleSlackEvent(request, env) {
+  const body = await request.json();
+
+  // Slack URL verification challenge
+  if (body.type === 'url_verification') {
+    return json({ challenge: body.challenge });
+  }
+
+  // Only process reaction_added events
+  if (body.event?.type !== 'reaction_added') return json({ ok: true });
+
+  const { reaction, user: reactUser, item } = body.event;
+  const mapping = REACTION_MAP[reaction];
+  if (!mapping) return json({ ok: true }); // Not a mapped reaction
+
+  // Only process messages in the allowed channel
+  if (item.type !== 'message') return json({ ok: true });
+  const channel = item.channel;
+
+  try {
+    // Get the original message text
+    const msgRes = await fetch(`https://slack.com/api/conversations.history?channel=${channel}&latest=${item.ts}&limit=1&inclusive=true`, {
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+    });
+    const msgData = await msgRes.json();
+    const message = msgData.ok ? msgData.messages?.[0] : null;
+    if (!message) return json({ ok: true });
+
+    const msgText = message.text || '';
+    const title = msgText.substring(0, 80).replace(/\n/g, ' ');
+
+    // Get message author name
+    const authorRes = await fetch(`https://slack.com/api/users.info?user=${message.user}`, {
+      headers: { Authorization: `Bearer ${env.SLACK_BOT_TOKEN}` },
+    });
+    const authorData = await authorRes.json();
+    const authorName = authorData.ok ? (authorData.user?.real_name || authorData.user?.name || 'Unknown') : 'Unknown';
+
+    // Build the Slack message permalink
+    const slackLink = `https://slack.com/archives/${channel}/p${item.ts.replace('.', '')}`;
+    const now = new Date().toISOString().split('T')[0];
+
+    // Write to Firebase
+    const dbUrl = env.FIREBASE_DB_URL || 'https://camp-dashborad-default-rtdb.asia-southeast1.firebasedatabase.app';
+    let fbPath, fbData;
+
+    if (mapping.target === 'tasks') {
+      fbPath = 'tasks';
+      fbData = {
+        title,
+        description: `Slack: ${authorName} (${now})\n${msgText.substring(0, 500)}`,
+        status: 'todo',
+        priority: 'medium',
+        assignee_id: null,
+        due_date: null,
+        source: 'slack',
+        slack_link: slackLink,
+        created_by: reactUser,
+        created_at: { '.sv': 'timestamp' },
+        updated_at: { '.sv': 'timestamp' },
+        order: Date.now(),
+      };
+    } else if (mapping.target === 'planning_topics') {
+      fbPath = 'planning_topics';
+      fbData = {
+        title,
+        context: `Slack: ${authorName} (${now})\n${msgText.substring(0, 500)}`,
+        category: '未分類',
+        status: '未着手',
+        priority: 'medium',
+        assignee_id: null,
+        due_date: null,
+        decision_id: null,
+        source: 'slack',
+        slack_link: slackLink,
+        created_by: reactUser,
+        created_at: { '.sv': 'timestamp' },
+        updated_at: { '.sv': 'timestamp' },
+      };
+    } else if (mapping.target === 'risks_issues') {
+      fbPath = 'risks_issues';
+      fbData = {
+        title,
+        type: 'issue',
+        impact: 'medium',
+        likelihood: null,
+        status: '未対応',
+        mitigation: '',
+        assignee_id: null,
+        due_date: null,
+        related_area: '',
+        source: 'slack',
+        slack_link: slackLink,
+        created_by: reactUser,
+        created_at: { '.sv': 'timestamp' },
+      };
+    } else if (mapping.target === 'decisions') {
+      fbPath = 'decisions';
+      fbData = {
+        title,
+        content: msgText.substring(0, 1000),
+        rationale: `Slack: ${authorName} (${now})`,
+        decided_at: now,
+        decided_by: reactUser,
+        topic_id: null,
+        impact_areas: '',
+        status: '有効',
+        source: 'slack',
+        slack_link: slackLink,
+        created_at: { '.sv': 'timestamp' },
+      };
+    }
+
+    // Firebase REST API - push new entry
+    const fbRes = await fetch(`${dbUrl}/${fbPath}.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fbData),
+    });
+    const fbResult = await fbRes.json();
+
+    // Reply in Slack thread
+    const labels = { tasks: 'タスク', planning_topics: '検討事項', risks_issues: 'リスク/課題', decisions: '意思決定' };
+    const replyText = `${labels[mapping.target]}に登録しました\nタイトル: ${title}\n→ <https://tomokinozawa.github.io/camp-dashboard/|Dashboard で確認>`;
+
+    await fetch('https://slack.com/api/chat.postMessage', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${env.SLACK_BOT_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        channel,
+        thread_ts: item.ts,
+        text: replyText,
+      }),
+    });
+
+    return json({ ok: true });
+  } catch (e) {
+    return json({ error: e.message }, 500);
+  }
 }
 
 function redirectWithError(env, message) {
