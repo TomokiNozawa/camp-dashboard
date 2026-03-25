@@ -251,6 +251,17 @@ html, body {
   border-radius: 2px 2px 0 0;
 }
 
+.tab-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  background: var(--bg-card);
+  font-size: 10px; font-weight: 700;
+  margin-right: 4px;
+  color: var(--text-muted);
+}
+.tab-item.active .tab-num { background: var(--accent-blue); color: #fff; }
+
 /* ============ TAB PANES ============ */
 .tab-pane { display: none; flex: 1; min-height: 0; overflow: hidden; flex-direction: column; }
 .tab-pane.active { display: flex; }
@@ -1869,11 +1880,11 @@ html, body {
 
   <!-- Tab Bar -->
   <div class="tab-bar" id="tabBar">
-    <button class="tab-item active" data-tab="overview" onclick="switchTab('overview', this)">概要</button>
-    <button class="tab-item" data-tab="topics" onclick="switchTab('topics', this)">検討事項</button>
-    <button class="tab-item" data-tab="tasks" onclick="switchTab('tasks', this)">タスク</button>
-    <button class="tab-item" data-tab="timeline" onclick="switchTab('timeline', this)">タイムライン</button>
-    <button class="tab-item" data-tab="records" onclick="switchTab('records', this)">記録</button>
+    <button class="tab-item active" data-tab="overview" onclick="switchTab('overview', this)"><span class="tab-num">1</span>概要</button>
+    <button class="tab-item" data-tab="topics" onclick="switchTab('topics', this)"><span class="tab-num">2</span>検討事項</button>
+    <button class="tab-item" data-tab="tasks" onclick="switchTab('tasks', this)"><span class="tab-num">3</span>タスク</button>
+    <button class="tab-item" data-tab="timeline" onclick="switchTab('timeline', this)"><span class="tab-num">4</span>タイムライン</button>
+    <button class="tab-item" data-tab="records" onclick="switchTab('records', this)"><span class="tab-num">5</span>記録</button>
   </div>
 
   <!-- ===== OVERVIEW TAB ===== -->
@@ -2974,6 +2985,9 @@ function showApp() {
   // Set up presence
   setupPresence();
 
+  // Seed initial data if empty
+  seedInitialData();
+
   // Start listening
   listenTasks();
   listenUsers();
@@ -2987,6 +3001,90 @@ function showApp() {
   listenFeedbackLogs();
   listenBudgets();
   listenProjectPhase();
+}
+
+// ============ SEED INITIAL DATA ============
+async function seedInitialData() {
+  // Only seed if planning_topics is empty
+  const snap = await db.ref('planning_topics').once('value');
+  if (snap.exists()) return;
+
+  const uid = currentUser.uid;
+  const now = firebase.database.ServerValue.TIMESTAMP;
+
+  // Project basic info
+  await db.ref('project').update({
+    name: 'Claude Cowork Camp',
+    purpose: '非エンジニア向けにClaude Desktop Coworkモードを使った業務効率化研修を提供する',
+    concept: 'AIに聞くのではなく、AIと一緒に働く体験を通じて、日常業務でのClaude活用スキルを身につける',
+    target_audience: '非エンジニアの一般職（PCは使えるがAIは未経験〜少し触った程度）',
+    format: '単発3時間・演習中心',
+    difficulty_level: '初級〜中級',
+    status: '企画中',
+    owner_id: uid
+  });
+
+  // Planning Topics (9 items)
+  const topics = [
+    { title: '誰向けの研修か（対象者定義）', context: '特定部署か全社か、ITリテラシーレベル、役職層、人数規模を整理する', category: '対象者定義', priority: 'high' },
+    { title: '受講後に何ができるようになるべきか', context: '研修翌日の月曜日に受講者が職場で何をしているかを具体的に描写する', category: 'ゴール設計', priority: 'high' },
+    { title: 'Claudeを使う意味・他社との差別化', context: 'なぜChatGPTではなくClaudeか、なぜ生成AI研修ではなくCowork Campか', category: '差別化', priority: 'high' },
+    { title: '想定する業務シーンは何か', context: '文書作成、情報整理、企画立案、データ分析、メール作成など候補を絞る', category: '業務適用', priority: 'medium' },
+    { title: '講義中心か演習中心か', context: '講義7:演習3 / 5:5 / 3:7のどれか。対象者のITリテラシーに依存', category: '形式・構成', priority: 'medium' },
+    { title: '単発か複数回か', context: '初回は単発3時間で立ち上げ、FBを基に複数回版を設計する案', category: '形式・構成', priority: 'medium' },
+    { title: '難易度ターゲット（初級/中級/上級）', context: '初級〜中級がボリュームゾーン。営業もしやすい', category: '形式・構成', priority: 'medium' },
+    { title: 'カリキュラム骨子をどう設計するか', context: 'イントロ→基本操作→演習×3→共有→まとめの3時間構成案', category: 'カリキュラム', priority: 'medium' },
+    { title: '受講者の人数上限・サポート体制', context: '1回あたり10名以下/20名/それ以上で運営方式が変わる', category: '運営', priority: 'low' },
+  ];
+  for (const t of topics) {
+    await db.ref('planning_topics').push({
+      ...t, status: '未着手', assignee_id: uid, due_date: null, decision_id: null,
+      created_by: uid, created_at: now, updated_at: now
+    });
+  }
+
+  // Milestones (Phase 0)
+  const ms = [
+    { title: '検討事項の初期登録', phase: 'phase0', planned_date: '2026-03-25', status: '完了', actual_date: '2026-03-25' },
+    { title: 'コンセプト確定（対象者・ゴール・差別化）', phase: 'phase0', planned_date: '2026-04-10', status: '未開始' },
+    { title: '企画書ドラフト完成', phase: 'phase0', planned_date: '2026-04-15', status: '未開始' },
+    { title: 'カリキュラム骨子完成', phase: 'phase1', planned_date: '2026-04-30', status: '未開始' },
+    { title: '教材・演習作成完了', phase: 'phase2', planned_date: '2026-05-31', status: '未開始' },
+    { title: 'パイロット実施完了', phase: 'phase3', planned_date: '2026-06-30', status: '未開始' },
+  ];
+  for (const m of ms) {
+    await db.ref('milestones').push({ ...m, assignee_id: uid, created_at: now });
+  }
+
+  // Deliverables
+  const deliverables = [
+    { title: '企画書', type: '企画書', status: '未着手', due_date: '2026-04-15', version: 'v0.1' },
+    { title: 'カリキュラム設計書', type: 'カリキュラム', status: '未着手', due_date: '2026-04-30', version: 'v0.1' },
+    { title: '研修スライド', type: '教材・スライド', status: '未着手', due_date: '2026-05-31', version: 'v0.1' },
+    { title: '演習ファイル', type: '演習ファイル', status: '未着手', due_date: '2026-05-31', version: 'v0.1' },
+  ];
+  for (const d of deliverables) {
+    await db.ref('deliverables').push({ ...d, assignee_id: uid, url: '', milestone_id: '', created_at: now });
+  }
+
+  // Stakeholders
+  await db.ref('stakeholders').push({
+    name: '野沢朝輝', role: 'オーナー', organization: 'DIK & Company',
+    involvement: '高', responsibilities: '企画立案・講師・全体推進',
+    contact: 'Slack', last_contacted: '2026-03-25', created_at: now
+  });
+
+  // Risks
+  const risks = [
+    { title: 'Claude Desktopの機能制約が研修内容に影響', type: 'risk', impact: 'high', likelihood: 'medium', status: '未対応', mitigation: 'Coworkモードの操作範囲を事前検証する', related_area: 'カリキュラム' },
+    { title: '受講者のITリテラシーばらつき', type: 'risk', impact: 'medium', likelihood: 'high', status: '未対応', mitigation: '事前アンケートでレベル把握、補助資料を準備', related_area: '運営' },
+    { title: 'Coworkモードの操作説明資料が存在しない', type: 'issue', impact: 'high', likelihood: null, status: '未対応', mitigation: '自作する必要がある', related_area: '教材' },
+  ];
+  for (const r of risks) {
+    await db.ref('risks_issues').push({ ...r, assignee_id: uid, due_date: null, created_at: now });
+  }
+
+  toast('初期データを投入しました');
 }
 
 // ============ TAB NAVIGATION ============
@@ -3710,11 +3808,11 @@ function listenProjectPhase() {
 
 function renderPhaseIndicator() {
   const phases = [
-    { key: 'phase0', num: 0, label: '企画立案' },
-    { key: 'phase1', num: 1, label: '設計' },
-    { key: 'phase2', num: 2, label: '開発' },
-    { key: 'phase3', num: 3, label: '検証' },
-    { key: 'phase4', num: 4, label: '展開' },
+    { key: 'phase0', num: 0, label: '企画立案', goal: '企画書ドラフトが1枚書ける状態' },
+    { key: 'phase1', num: 1, label: '設計', goal: 'カリキュラム骨子と教材構成が確定' },
+    { key: 'phase2', num: 2, label: '開発', goal: '教材・演習ファイルが完成' },
+    { key: 'phase3', num: 3, label: '検証', goal: 'パイロット実施しフィードバック反映' },
+    { key: 'phase4', num: 4, label: '展開', goal: '初回本番実施・実施報告書完成' },
   ];
   const currentIdx = phases.findIndex(p => p.key === currentPhase);
   const container = document.getElementById('phaseIndicator');
@@ -3726,6 +3824,7 @@ function renderPhaseIndicator() {
       <div class="phase-step ${cls}" onclick="setProjectPhase('${p.key}')">
         <div class="phase-circle">${p.num}</div>
         <div class="phase-label">P${p.num} ${p.label}</div>
+        ${i === currentIdx ? `<div style="font-size:10px;color:var(--accent-blue);margin-top:2px;text-align:center;max-width:100px">🎯 ${p.goal}</div>` : ''}
       </div>`;
   }).join('');
 }
@@ -5048,7 +5147,36 @@ function escHtml(str) {
 }
 
 // Close modals on Escape / overlay click
+const TAB_ORDER = ['overview', 'topics', 'tasks', 'timeline', 'records'];
+
 document.addEventListener('keydown', e => {
+  // Alt + number: switch to tab
+  if (e.altKey && e.key >= '1' && e.key <= '5') {
+    e.preventDefault();
+    const idx = parseInt(e.key) - 1;
+    const tabName = TAB_ORDER[idx];
+    const tabEl = document.querySelector(`.tab-item[data-tab="${tabName}"]`);
+    if (tabEl) switchTab(tabName, tabEl);
+    return;
+  }
+  // Alt + ArrowUp: previous tab
+  if (e.altKey && e.key === 'ArrowUp') {
+    e.preventDefault();
+    const idx = TAB_ORDER.indexOf(activeTab);
+    const prevIdx = (idx - 1 + TAB_ORDER.length) % TAB_ORDER.length;
+    const tabEl = document.querySelector(`.tab-item[data-tab="${TAB_ORDER[prevIdx]}"]`);
+    if (tabEl) switchTab(TAB_ORDER[prevIdx], tabEl);
+    return;
+  }
+  // Alt + ArrowDown: next tab
+  if (e.altKey && e.key === 'ArrowDown') {
+    e.preventDefault();
+    const idx = TAB_ORDER.indexOf(activeTab);
+    const nextIdx = (idx + 1) % TAB_ORDER.length;
+    const tabEl = document.querySelector(`.tab-item[data-tab="${TAB_ORDER[nextIdx]}"]`);
+    if (tabEl) switchTab(TAB_ORDER[nextIdx], tabEl);
+    return;
+  }
   if (e.key === 'Escape') {
     closeModal('taskModal');
     closeDeleteModal();
