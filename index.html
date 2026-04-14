@@ -2460,58 +2460,60 @@ html, body {
       <div class="modal-title" id="meetingModalTitle">新規会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingModal')">&times;</button>
     </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1;">
-        <label class="form-label">開催日 *</label>
-        <input type="date" class="form-input" id="meetingDateInput">
+    <div class="modal-body" style="padding:24px 36px;">
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">開催日 *</label>
+          <input type="date" class="form-input" id="meetingDateInput">
+        </div>
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">カテゴリ *</label>
+          <select class="form-select" id="meetingCategoryInput">
+            <option value="戦略会議">戦略会議</option>
+            <option value="定例会">定例会</option>
+            <option value="個別検討">個別検討</option>
+            <option value="toB案件">toB案件</option>
+            <option value="toC案件">toC案件</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group" style="flex:1;">
-        <label class="form-label">カテゴリ *</label>
-        <select class="form-select" id="meetingCategoryInput">
-          <option value="戦略会議">戦略会議</option>
-          <option value="定例会">定例会</option>
-          <option value="個別検討">個別検討</option>
-          <option value="toB案件">toB案件</option>
-          <option value="toC案件">toC案件</option>
-          <option value="その他">その他</option>
-        </select>
+      <div class="form-group">
+        <label class="form-label">タイトル *</label>
+        <input type="text" class="form-input" id="meetingTitleInput" placeholder="例: CoworkCamp内部mtg">
+      </div>
+      <div class="form-group">
+        <label class="form-label">参加者（カンマ区切り）</label>
+        <input type="text" class="form-input" id="meetingAttendeesInput" placeholder="例: 野沢, 中田, 神波">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Agenda</label>
+        <textarea class="form-input" id="meetingAgendaInput" rows="2" placeholder="議題（任意）"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">議事メモ *</label>
+        <textarea class="form-input" id="meetingMemoInput" rows="10" placeholder="議事メモ（マークダウン可）"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">決定事項サマリ</label>
+        <textarea class="form-input" id="meetingDecisionsInput" rows="2" placeholder="決定事項があれば（任意）"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
+          <label class="form-label">次回会議日</label>
+          <input type="date" class="form-input" id="meetingNextDateInput">
+        </div>
+        <div class="form-group" style="flex:2;">
+          <label class="form-label">次回Agenda</label>
+          <input type="text" class="form-input" id="meetingNextAgendaInput" placeholder="次回の議題（任意）">
+        </div>
       </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">タイトル *</label>
-      <input type="text" class="form-input" id="meetingTitleInput" placeholder="例: CoworkCamp内部mtg">
-    </div>
-    <div class="form-group">
-      <label class="form-label">参加者（カンマ区切り）</label>
-      <input type="text" class="form-input" id="meetingAttendeesInput" placeholder="例: 野沢, 中田, 神波">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Agenda</label>
-      <textarea class="form-input" id="meetingAgendaInput" rows="2" placeholder="議題（任意）"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">議事メモ *</label>
-      <textarea class="form-input" id="meetingMemoInput" rows="10" placeholder="議事メモ（マークダウン可）"></textarea>
-    </div>
-    <div class="form-group">
-      <label class="form-label">決定事項サマリ</label>
-      <textarea class="form-input" id="meetingDecisionsInput" rows="2" placeholder="決定事項があれば（任意）"></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group" style="flex:1;">
-        <label class="form-label">次回会議日</label>
-        <input type="date" class="form-input" id="meetingNextDateInput">
-      </div>
-      <div class="form-group" style="flex:2;">
-        <label class="form-label">次回Agenda</label>
-        <input type="text" class="form-input" id="meetingNextAgendaInput" placeholder="次回の議題（任意）">
-      </div>
-    </div>
-    <div class="modal-footer" style="display:flex;justify-content:space-between;">
-      <button class="btn btn-danger" id="meetingDeleteBtn" style="display:none;" onclick="deleteMeeting()">削除</button>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;padding:16px 36px;">
+      <button class="btn btn-danger" id="meetingDeleteBtn" style="display:none;" onclick="deleteMeeting()">削除 <span style="font-size:9px;opacity:0.7;margin-left:2px">Alt&Del</span></button>
       <div style="display:flex;gap:8px;margin-left:auto;">
-        <button class="btn btn-secondary" onclick="closeModal('meetingModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveMeeting()">保存</button>
+        <button class="btn btn-secondary" onclick="closeModal('meetingModal')">キャンセル <span style="font-size:9px;color:var(--text-muted);margin-left:2px">Esc</span></button>
+        <button class="btn btn-primary" onclick="saveMeeting()">保存 <span style="font-size:9px;color:rgba(255,255,255,0.6);margin-left:2px">Alt&S</span></button>
       </div>
     </div>
   </div>
@@ -2524,10 +2526,10 @@ html, body {
       <div class="modal-title" id="meetingDetailTitle">会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingDetailModal')">&times;</button>
     </div>
-    <div id="meetingDetailBody"></div>
-    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;">
-      <button class="btn btn-primary" onclick="editMeetingFromDetail()">✏️ 編集</button>
-      <button class="btn btn-secondary" onclick="closeModal('meetingDetailModal')">閉じる</button>
+    <div id="meetingDetailBody" style="padding:24px 36px;"></div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;padding:16px 36px;">
+      <button class="btn btn-primary" onclick="editMeetingFromDetail()">✏️ 編集 <span style="font-size:9px;color:rgba(255,255,255,0.6);margin-left:2px">E</span></button>
+      <button class="btn btn-secondary" onclick="closeModal('meetingDetailModal')">閉じる <span style="font-size:9px;color:var(--text-muted);margin-left:2px">Esc</span></button>
     </div>
   </div>
 </div>
@@ -3581,6 +3583,8 @@ function handleFabClick() {
     else if (activeRecordsSubTab === 'feedback') openFeedbackCreateModal();
     else if (activeRecordsSubTab === 'budget') openBudgetCreateModal();
     else openDecisionCreateModal();
+  } else if (activeTab === 'meetings') {
+    openMeetingCreateModal();
   } else {
     openCreateModal('todo');
   }
@@ -6253,17 +6257,44 @@ document.getElementById('quickSearchInput').addEventListener('keydown', e => {
 });
 
 // Close modals on Escape / overlay click
-const TAB_ORDER = ['overview', 'topics', 'tasks', 'timeline', 'records'];
+const TAB_ORDER = ['overview', 'topics', 'tasks', 'timeline', 'records', 'meetings'];
 
 document.addEventListener('keydown', e => {
-  // Alt + number: switch to tab
-  if (e.altKey && e.key >= '1' && e.key <= '5') {
+  const tag = document.activeElement?.tagName;
+  const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  // Alt + number: switch to tab (1-6)
+  if (e.altKey && e.key >= '1' && e.key <= '6') {
     e.preventDefault();
     const idx = parseInt(e.key) - 1;
     const tabName = TAB_ORDER[idx];
     const tabEl = document.querySelector(`.tab-item[data-tab="${tabName}"]`);
     if (tabEl) switchTab(tabName, tabEl);
     return;
+  }
+
+  // ── モーダルオープン時のショートカット ──
+  const isMeetingModalOpen = document.getElementById('meetingModal')?.classList.contains('active');
+  const isMeetingDetailOpen = document.getElementById('meetingDetailModal')?.classList.contains('active');
+  const isTopicDetailOpen = document.getElementById('topicDetailModal')?.classList.contains('active');
+  const isDecisionDetailOpen = document.getElementById('decisionDetailModal')?.classList.contains('active');
+  const isFeedbackDetailOpen = document.getElementById('feedbackDetailModal')?.classList.contains('active');
+
+  // 編集モーダル(会議記録など)でのショートカット
+  if (isMeetingModalOpen && !isInput) {
+    if (e.altKey && e.key === 's') { e.preventDefault(); saveMeeting(); return; }
+    if (e.altKey && e.key === 'Delete') { e.preventDefault(); deleteMeeting(); return; }
+  }
+  if (isMeetingModalOpen && e.altKey && e.key === 's') {
+    // textarea内でもAlt+Sは保存に使いたい
+    e.preventDefault(); saveMeeting(); return;
+  }
+  // 詳細モーダルで E → 編集
+  if (!isInput && (e.key === 'e' || e.key === 'E') && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    if (isMeetingDetailOpen) { e.preventDefault(); editMeetingFromDetail(); return; }
+    if (isTopicDetailOpen) { e.preventDefault(); editTopicFromDetail(); return; }
+    if (isDecisionDetailOpen) { e.preventDefault(); editDecisionFromDetail(); return; }
+    if (isFeedbackDetailOpen) { e.preventDefault(); editFeedbackFromDetail(); return; }
   }
   // Alt + Left/Right: previous/next records sub-tab (when on records tab)
   if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && activeTab === 'records') {
@@ -6355,6 +6386,8 @@ document.addEventListener('keydown', e => {
     closeModal('feedbackModal');
     closeModal('feedbackDetailModal');
     closeModal('budgetModal');
+    closeModal('meetingModal');
+    closeModal('meetingDetailModal');
     document.getElementById('membersPanel').classList.remove('active');
   }
 });
