@@ -36,6 +36,9 @@ export default {
         return json({ ok: true });
       }
       if (url.pathname === "/health") return json({ status: "ok" });
+      if (url.pathname === "/comment-summary" && request.method === "POST") {
+        return handleCommentSummary(request, env);
+      }
       return new Response("Not Found", { status: 404 });
     } catch (e) {
       return json({ error: e.message }, 500);
@@ -46,9 +49,59 @@ export default {
 function corsHeaders(env) {
   return {
     "Access-Control-Allow-Origin": env.ALLOWED_ORIGIN || "*",
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
+}
+
+async function handleCommentSummary(request, env) {
+  try {
+    const body = await request.json();
+    const { topicTitle, comments } = body || {};
+    if (!comments || typeof comments !== 'string') {
+      return json({ error: 'comments required' }, 400);
+    }
+    if (!env.OPENAI_API_KEY) {
+      return json({ error: 'OPENAI_API_KEY not set' }, 500);
+    }
+
+    const prompt = `以下はCamp企画の検討事項「${topicTitle || ''}」に関するコメントスレッドです。議論内容を日本語で200字程度に要約してください。結論や合意事項、未解決の論点があれば明記してください。\n\n【コメント】\n${comments}`;
+
+    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + env.OPENAI_API_KEY,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: 'あなたは会議の議事要約アシスタントです。簡潔で構造化された日本語要約を作成します。' },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 400,
+      }),
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      return new Response(JSON.stringify({ error: 'OpenAI error: ' + err }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+      });
+    }
+    const data = await resp.json();
+    const summary = data.choices?.[0]?.message?.content || '(要約を取得できませんでした)';
+    return new Response(JSON.stringify({ summary }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ error: e.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+    });
+  }
 }
 
 function json(data, status = 200) {

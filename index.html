@@ -433,6 +433,7 @@ html, body {
 .category-badge[data-cat="形式・構成"] { background: rgba(232,184,64,0.15); color: var(--accent-yellow); }
 .category-badge[data-cat="カリキュラム"] { background: rgba(248,81,73,0.15); color: var(--accent-red); }
 .category-badge[data-cat="運営"] { background: rgba(139,149,165,0.15); color: var(--text-secondary); }
+.category-badge[data-cat="その他"] { background: rgba(139,149,165,0.10); color: var(--text-muted); }
 
 .status-badge {
   font-size: 11px;
@@ -2202,6 +2203,7 @@ html, body {
       <button class="filter-chip" data-topic-cat="形式・構成" onclick="filterTopicCategory('形式・構成', this)">形式・構成</button>
       <button class="filter-chip" data-topic-cat="カリキュラム" onclick="filterTopicCategory('カリキュラム', this)">カリキュラム</button>
       <button class="filter-chip" data-topic-cat="運営" onclick="filterTopicCategory('運営', this)">運営</button>
+      <button class="filter-chip" data-topic-cat="その他" onclick="filterTopicCategory('その他', this)">その他</button>
     </div>
     <div class="topics-toolbar">
       <span class="topics-toolbar-label">ステータス:</span>
@@ -2530,6 +2532,7 @@ html, body {
             <option value="形式・構成">形式・構成</option>
             <option value="カリキュラム">カリキュラム</option>
             <option value="運営">運営</option>
+            <option value="その他">その他</option>
           </select>
         </div>
         <div class="form-group">
@@ -3130,6 +3133,7 @@ html, body {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 
 <script>
 // ============ CONFIG ============
@@ -3200,6 +3204,7 @@ let activeRecordsSubTab = 'decisions';
 firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.database();
 const auth = firebase.auth();
+const storage = firebase.storage();
 
 // Check for auth tokens in hash (returned from Cloudflare Worker)
 function checkAuthHash() {
@@ -3926,10 +3931,17 @@ function openTopicDetail(topicId) {
       ${decisionLink}
     </div>
     <div class="comment-thread">
-      <div class="comment-thread-title">コメント</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <div class="comment-thread-title" style="margin:0;flex:1;">コメント</div>
+        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="summarizeTopicComments()" id="topicSummarizeBtn" title="AIでコメント要約">📝 要約</button>
+      </div>
+      <div id="topicSummaryBox" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(90,173,255,0.08);border-left:3px solid var(--accent-blue);border-radius:4px;font-size:12px;line-height:1.6;"></div>
       <div class="comment-list" id="topicCommentList"></div>
-      <div class="comment-input-row">
-        <input class="form-input" id="topicCommentInput" placeholder="コメントを追加..." maxlength="500" onkeydown="if(event.key==='Enter')addTopicComment()">
+      <div id="topicCommentFilePreview" style="display:none;margin-top:8px;padding:6px 10px;background:var(--bg-card);border-radius:4px;font-size:11px;"></div>
+      <div class="comment-input-row" style="align-items:center;gap:6px;">
+        <input class="form-input" id="topicCommentInput" placeholder="コメントを追加..." maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTopicComment();}" style="flex:1;">
+        <input type="file" id="topicCommentFile" style="display:none" onchange="onCommentFileSelected()" multiple>
+        <button class="btn btn-secondary" onclick="document.getElementById('topicCommentFile').click()" title="ファイル添付" style="padding:6px 10px;">📎</button>
         <button class="btn btn-primary" onclick="addTopicComment()">送信</button>
       </div>
     </div>`;
@@ -3953,34 +3965,122 @@ function renderTopicComments(topicId) {
   commentList.innerHTML = comments.map(c => {
     const author = c.author_id && users[c.author_id] ? users[c.author_id] : null;
     const timeStr = c.created_at ? formatDateTime(c.created_at) : '';
+    let filesHtml = '';
+    if (c.files && c.files.length) {
+      filesHtml = '<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px;">' +
+        c.files.map(f => {
+          const isImg = (f.mimeType || '').startsWith('image/');
+          if (isImg) {
+            return `<a href="${escHtml(f.url)}" target="_blank" style="display:inline-block;max-width:200px;"><img src="${escHtml(f.url)}" alt="${escHtml(f.name)}" style="max-width:200px;max-height:150px;border-radius:4px;border:1px solid var(--border);"></a>`;
+          }
+          const sizeKb = f.size ? Math.round(f.size / 1024) + 'KB' : '';
+          return `<a href="${escHtml(f.url)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent-blue);text-decoration:none;padding:4px 8px;background:var(--bg-card);border-radius:4px;border:1px solid var(--border);width:fit-content;">📎 ${escHtml(f.name)} <span style="color:var(--text-muted);">${sizeKb}</span></a>`;
+        }).join('') + '</div>';
+    }
     return `
       <div class="comment-item">
         ${author && author.avatar ? `<img class="comment-avatar" src="${escHtml(author.avatar)}" alt="">` : '<div class="comment-avatar" style="background:var(--bg-card)"></div>'}
         <div class="comment-body">
           <div class="comment-author">${author ? escHtml(author.name) : '不明'}</div>
-          <div class="comment-text">${escHtml(c.text)}</div>
+          ${c.text ? `<div class="comment-text">${escHtml(c.text)}</div>` : ''}
+          ${filesHtml}
           <div class="comment-time">${timeStr}</div>
         </div>
       </div>`;
   }).join('');
 }
 
+let pendingCommentFiles = [];
+
+function onCommentFileSelected() {
+  const input = document.getElementById('topicCommentFile');
+  pendingCommentFiles = Array.from(input.files || []);
+  const preview = document.getElementById('topicCommentFilePreview');
+  if (!pendingCommentFiles.length) { preview.style.display = 'none'; return; }
+  preview.style.display = 'block';
+  preview.innerHTML = '添付: ' + pendingCommentFiles.map(f => `<span style="margin-right:8px;">📎 ${escHtml(f.name)} (${Math.round(f.size/1024)}KB)</span>`).join('') +
+    ` <button onclick="clearCommentFiles()" style="font-size:10px;padding:2px 6px;background:transparent;border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--text-muted);">クリア</button>`;
+}
+
+function clearCommentFiles() {
+  pendingCommentFiles = [];
+  document.getElementById('topicCommentFile').value = '';
+  document.getElementById('topicCommentFilePreview').style.display = 'none';
+}
+
 async function addTopicComment() {
   if (!viewingTopicId) return;
   const input = document.getElementById('topicCommentInput');
   const text = input.value.trim();
-  if (!text) return;
+  if (!text && !pendingCommentFiles.length) return;
 
   try {
-    await db.ref(`planning_topics/${viewingTopicId}/comments`).push({
-      text,
-      author_id: currentUser.uid,
-      created_at: firebase.database.ServerValue.TIMESTAMP
-    });
+    // Upload files first
+    const filesMeta = [];
+    if (pendingCommentFiles.length) {
+      const commentRefKey = db.ref(`planning_topics/${viewingTopicId}/comments`).push().key;
+      for (const file of pendingCommentFiles) {
+        const safeName = file.name.replace(/[^\w.\-一-龠ぁ-んァ-ヶー]/g, '_');
+        const storageRef = storage.ref(`comments/${viewingTopicId}/${commentRefKey}/${Date.now()}_${safeName}`);
+        const snap = await storageRef.put(file);
+        const url = await snap.ref.getDownloadURL();
+        filesMeta.push({ name: file.name, url, size: file.size, mimeType: file.type || 'application/octet-stream' });
+      }
+      await db.ref(`planning_topics/${viewingTopicId}/comments/${commentRefKey}`).set({
+        text: text || '',
+        files: filesMeta,
+        author_id: currentUser.uid,
+        created_at: firebase.database.ServerValue.TIMESTAMP
+      });
+    } else {
+      await db.ref(`planning_topics/${viewingTopicId}/comments`).push({
+        text,
+        author_id: currentUser.uid,
+        created_at: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
     input.value = '';
-    // Comments will re-render via listener since they are nested under planning_topics
+    clearCommentFiles();
   } catch (e) {
     toast('エラー: ' + e.message);
+  }
+}
+
+async function summarizeTopicComments() {
+  if (!viewingTopicId) return;
+  const topic = planningTopics[viewingTopicId];
+  if (!topic || !topic.comments) { toast('コメントがありません'); return; }
+  const comments = Object.entries(topic.comments)
+    .map(([id, c]) => ({ id, ...c }))
+    .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
+  if (!comments.length) { toast('コメントがありません'); return; }
+
+  const box = document.getElementById('topicSummaryBox');
+  const btn = document.getElementById('topicSummarizeBtn');
+  btn.disabled = true;
+  btn.textContent = '要約中...';
+  box.style.display = 'block';
+  box.innerHTML = '<span style="color:var(--text-muted);">🤔 AIで要約を生成中...</span>';
+
+  try {
+    const token = await auth.currentUser.getIdToken();
+    const formatted = comments.map(c => {
+      const a = c.author_id && users[c.author_id] ? users[c.author_id].name : '不明';
+      return `[${a}] ${c.text || ''}`;
+    }).join('\n');
+    const resp = await fetch(AUTH_WORKER_URL + '/comment-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ topicTitle: topic.title, comments: formatted })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    box.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><div style="white-space:pre-wrap;">' + escHtml(data.summary || '') + '</div>';
+  } catch (e) {
+    box.innerHTML = '<span style="color:var(--accent-red);">エラー: ' + escHtml(e.message) + '</span>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📝 要約';
   }
 }
 
