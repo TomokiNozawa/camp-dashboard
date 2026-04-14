@@ -2455,7 +2455,7 @@ html, body {
 
 <!-- ===== MEETING CREATE/EDIT MODAL ===== -->
 <div class="modal-overlay" id="meetingModal">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:800px;margin:0 40px;">
+  <div class="modal" onclick="event.stopPropagation()" style="width:min(800px, calc(100vw - 160px));max-width:none;">
     <div class="modal-header">
       <div class="modal-title" id="meetingModalTitle">新規会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingModal')">&times;</button>
@@ -2519,7 +2519,7 @@ html, body {
 
 <!-- ===== MEETING DETAIL MODAL ===== -->
 <div class="modal-overlay" id="meetingDetailModal">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:900px;margin:0 40px;">
+  <div class="modal" onclick="event.stopPropagation()" style="width:min(900px, calc(100vw - 160px));max-width:none;">
     <div class="modal-header">
       <div class="modal-title" id="meetingDetailTitle">会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingDetailModal')">&times;</button>
