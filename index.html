@@ -3944,7 +3944,7 @@ function openTopicDetail(topicId) {
       <div class="comment-list" id="topicCommentList"></div>
       <div id="topicCommentFilePreview" style="display:none;margin-top:8px;padding:6px 10px;background:var(--bg-card);border-radius:4px;font-size:11px;"></div>
       <div class="comment-input-row" style="align-items:center;gap:6px;">
-        <input class="form-input" id="topicCommentInput" placeholder="コメントを追加..." maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTopicComment();}" style="flex:1;">
+        <input class="form-input" id="topicCommentInput" placeholder="コメント追加（Ctrl+Vで画像貼付可）..." maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addTopicComment();}" onpaste="handleCommentPaste(event)" style="flex:1;">
         <input type="file" id="topicCommentFile" style="display:none" onchange="onCommentFileSelected()" multiple>
         <button class="btn btn-secondary" onclick="document.getElementById('topicCommentFile').click()" title="ファイル添付" style="padding:6px 10px;">📎</button>
         <button class="btn btn-primary" onclick="addTopicComment()">送信</button>
@@ -4000,18 +4000,46 @@ let pendingCommentFiles = [];
 
 function onCommentFileSelected() {
   const input = document.getElementById('topicCommentFile');
-  pendingCommentFiles = Array.from(input.files || []);
-  const preview = document.getElementById('topicCommentFilePreview');
-  if (!pendingCommentFiles.length) { preview.style.display = 'none'; return; }
-  preview.style.display = 'block';
-  preview.innerHTML = '添付: ' + pendingCommentFiles.map(f => `<span style="margin-right:8px;">📎 ${escHtml(f.name)} (${Math.round(f.size/1024)}KB)</span>`).join('') +
-    ` <button onclick="clearCommentFiles()" style="font-size:10px;padding:2px 6px;background:transparent;border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--text-muted);">クリア</button>`;
+  pendingCommentFiles = [...pendingCommentFiles, ...Array.from(input.files || [])];
+  input.value = '';
+  updateCommentFilePreview();
 }
 
 function clearCommentFiles() {
   pendingCommentFiles = [];
   document.getElementById('topicCommentFile').value = '';
   document.getElementById('topicCommentFilePreview').style.display = 'none';
+}
+
+function handleCommentPaste(e) {
+  const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+  if (!items) return;
+  const pastedFiles = [];
+  for (const item of items) {
+    if (item.kind === 'file' && item.type.startsWith('image/')) {
+      const blob = item.getAsFile();
+      if (blob) {
+        const ext = (blob.type.split('/')[1] || 'png').split('+')[0];
+        const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        const renamed = new File([blob], `paste_${ts}.${ext}`, { type: blob.type });
+        pastedFiles.push(renamed);
+      }
+    }
+  }
+  if (pastedFiles.length) {
+    e.preventDefault();
+    pendingCommentFiles = [...pendingCommentFiles, ...pastedFiles];
+    updateCommentFilePreview();
+    toast(`画像 ${pastedFiles.length}件を添付しました`);
+  }
+}
+
+function updateCommentFilePreview() {
+  const preview = document.getElementById('topicCommentFilePreview');
+  if (!pendingCommentFiles.length) { preview.style.display = 'none'; return; }
+  preview.style.display = 'block';
+  preview.innerHTML = '添付: ' + pendingCommentFiles.map(f => `<span style="margin-right:8px;">📎 ${escHtml(f.name)} (${Math.round(f.size/1024)}KB)</span>`).join('') +
+    ` <button onclick="clearCommentFiles()" style="font-size:10px;padding:2px 6px;background:transparent;border:1px solid var(--border);border-radius:3px;cursor:pointer;color:var(--text-muted);">クリア</button>`;
 }
 
 async function addTopicComment() {
