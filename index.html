@@ -2155,6 +2155,7 @@ html, body {
     <button class="tab-item" data-tab="tasks" onclick="switchTab('tasks', this)"><span class="tab-num">3</span>タスク</button>
     <button class="tab-item" data-tab="timeline" onclick="switchTab('timeline', this)"><span class="tab-num">4</span>タイムライン</button>
     <button class="tab-item" data-tab="records" onclick="switchTab('records', this)"><span class="tab-num">5</span>記録</button>
+    <button class="tab-item" data-tab="meetings" onclick="switchTab('meetings', this)"><span class="tab-num">6</span>会議記録</button>
   </div>
 
   <!-- ===== OVERVIEW TAB ===== -->
@@ -2430,8 +2431,105 @@ html, body {
     </div>
   </div>
 
+  <!-- ===== MEETINGS TAB ===== -->
+  <div class="tab-pane meetings-pane" id="paneMeetings">
+    <div class="topics-toolbar">
+      <span class="topics-toolbar-label">カテゴリ:</span>
+      <button class="filter-chip active" data-meeting-cat="全て" onclick="filterMeetingCategory('全て', this)">全て</button>
+      <button class="filter-chip" data-meeting-cat="戦略会議" onclick="filterMeetingCategory('戦略会議', this)">戦略会議</button>
+      <button class="filter-chip" data-meeting-cat="定例会" onclick="filterMeetingCategory('定例会', this)">定例会</button>
+      <button class="filter-chip" data-meeting-cat="個別検討" onclick="filterMeetingCategory('個別検討', this)">個別検討</button>
+      <button class="filter-chip" data-meeting-cat="toB案件" onclick="filterMeetingCategory('toB案件', this)">toB案件</button>
+      <button class="filter-chip" data-meeting-cat="toC案件" onclick="filterMeetingCategory('toC案件', this)">toC案件</button>
+      <button class="filter-chip" data-meeting-cat="その他" onclick="filterMeetingCategory('その他', this)">その他</button>
+      <button class="btn btn-primary" style="margin-left:auto;padding:6px 14px;font-size:12px;" onclick="openMeetingCreateModal()">+ 新規会議</button>
+    </div>
+    <div id="meetingList" class="records-list" style="margin-top:12px;">
+      <div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;">会議記録はまだありません</div>
+    </div>
+  </div>
+
   <!-- FAB (mobile) -->
   <button class="fab" id="mainFab" onclick="handleFabClick()">+</button>
+</div>
+
+<!-- ===== MEETING CREATE/EDIT MODAL ===== -->
+<div class="modal-overlay" id="meetingModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:680px;">
+    <div class="modal-header">
+      <div class="modal-title" id="meetingModalTitle">新規会議記録</div>
+      <button class="modal-close" onclick="closeModal('meetingModal')">&times;</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">開催日 *</label>
+        <input type="date" class="form-input" id="meetingDateInput">
+      </div>
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">カテゴリ *</label>
+        <select class="form-select" id="meetingCategoryInput">
+          <option value="戦略会議">戦略会議</option>
+          <option value="定例会">定例会</option>
+          <option value="個別検討">個別検討</option>
+          <option value="toB案件">toB案件</option>
+          <option value="toC案件">toC案件</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">タイトル *</label>
+      <input type="text" class="form-input" id="meetingTitleInput" placeholder="例: CoworkCamp内部mtg">
+    </div>
+    <div class="form-group">
+      <label class="form-label">参加者（カンマ区切り）</label>
+      <input type="text" class="form-input" id="meetingAttendeesInput" placeholder="例: 野沢, 中田, 神波">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Agenda</label>
+      <textarea class="form-input" id="meetingAgendaInput" rows="2" placeholder="議題（任意）"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">議事メモ *</label>
+      <textarea class="form-input" id="meetingMemoInput" rows="10" placeholder="議事メモ（マークダウン可）"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label">決定事項サマリ</label>
+      <textarea class="form-input" id="meetingDecisionsInput" rows="2" placeholder="決定事項があれば（任意）"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex:1;">
+        <label class="form-label">次回会議日</label>
+        <input type="date" class="form-input" id="meetingNextDateInput">
+      </div>
+      <div class="form-group" style="flex:2;">
+        <label class="form-label">次回Agenda</label>
+        <input type="text" class="form-input" id="meetingNextAgendaInput" placeholder="次回の議題（任意）">
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;justify-content:space-between;">
+      <button class="btn btn-danger" id="meetingDeleteBtn" style="display:none;" onclick="deleteMeeting()">削除</button>
+      <div style="display:flex;gap:8px;margin-left:auto;">
+        <button class="btn btn-secondary" onclick="closeModal('meetingModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveMeeting()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MEETING DETAIL MODAL ===== -->
+<div class="modal-overlay" id="meetingDetailModal">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:780px;">
+    <div class="modal-header">
+      <div class="modal-title" id="meetingDetailTitle">会議記録</div>
+      <button class="modal-close" onclick="closeModal('meetingDetailModal')">&times;</button>
+    </div>
+    <div id="meetingDetailBody"></div>
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-secondary" onclick="editMeetingFromDetail()">編集</button>
+      <button class="btn btn-secondary" onclick="closeModal('meetingDetailModal')">閉じる</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== TASK CREATE/EDIT MODAL ===== -->
@@ -3365,6 +3463,7 @@ function showApp() {
   listenStakeholders();
   listenFeedbackLogs();
   listenBudgets();
+  listenMeetings();
   listenProjectPhase();
 }
 
@@ -3465,7 +3564,8 @@ function switchTab(tabName, el) {
     topics: 'paneTopics',
     tasks: 'paneTasks',
     timeline: 'paneTimeline',
-    records: 'paneRecords'
+    records: 'paneRecords',
+    meetings: 'paneMeetings'
   };
   document.getElementById(paneMap[tabName]).classList.add('active');
 }
@@ -5909,6 +6009,8 @@ function closeModal(id) {
     viewingTopicId = null;
     if (autoSummaryTimer) { clearTimeout(autoSummaryTimer); autoSummaryTimer = null; }
   }
+  if (id === 'meetingModal') { editingMeetingId = null; }
+  if (id === 'meetingDetailModal') { viewingMeetingId = null; }
   if (id === 'decisionModal') {
     editingDecisionId = null;
     document.getElementById('decisionTitleInput').style.borderColor = '';
@@ -6282,6 +6384,202 @@ function applyTheme() {
   const isLight = theme === 'light';
   if (isLight) document.body.classList.add('light');
   updateThemeUI(isLight);
+}
+
+// ============ MEETINGS ============
+let meetings = {};
+let meetingFilterCategory = '全て';
+let editingMeetingId = null;
+let viewingMeetingId = null;
+
+const MEETING_CATEGORY_COLORS = {
+  '戦略会議': 'rgba(184,140,255,0.15)',  // purple
+  '定例会': 'rgba(90,173,255,0.15)',     // blue
+  '個別検討': 'rgba(66,199,96,0.15)',    // green
+  'toB案件': 'rgba(240,136,62,0.15)',    // orange
+  'toC案件': 'rgba(86,212,221,0.15)',    // cyan
+  'その他': 'rgba(139,149,165,0.15)',    // gray
+};
+const MEETING_CATEGORY_TEXT = {
+  '戦略会議': 'var(--accent-purple)',
+  '定例会': 'var(--accent-blue)',
+  '個別検討': 'var(--accent-green)',
+  'toB案件': 'var(--accent-orange)',
+  'toC案件': 'var(--accent-cyan)',
+  'その他': 'var(--text-secondary)',
+};
+
+function listenMeetings() {
+  db.ref('meetings').on('value', snap => {
+    meetings = snap.val() || {};
+    renderMeetings();
+  });
+}
+
+function filterMeetingCategory(cat, btn) {
+  meetingFilterCategory = cat;
+  document.querySelectorAll('[data-meeting-cat]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMeetings();
+}
+
+function renderMeetings() {
+  const list = document.getElementById('meetingList');
+  if (!list) return;
+  let entries = Object.entries(meetings)
+    .map(([id, m]) => ({ id, ...m }))
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  if (meetingFilterCategory !== '全て') {
+    entries = entries.filter(m => m.category === meetingFilterCategory);
+  }
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;font-size:13px;">会議記録はまだありません</div>';
+    return;
+  }
+  list.innerHTML = entries.map(m => {
+    const bg = MEETING_CATEGORY_COLORS[m.category] || MEETING_CATEGORY_COLORS['その他'];
+    const fg = MEETING_CATEGORY_TEXT[m.category] || MEETING_CATEGORY_TEXT['その他'];
+    const memoPreview = (m.memo || '').slice(0, 100).replace(/\n/g, ' ') + ((m.memo || '').length > 100 ? '...' : '');
+    const attendees = Array.isArray(m.attendees) ? m.attendees.join(', ') : (m.attendees || '');
+    const dateStr = m.date ? m.date.replace(/-/g, '/') : '';
+    return `<div class="record-card" onclick="openMeetingDetail('${m.id}')" style="cursor:pointer;padding:14px 16px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;background:var(--bg-card);transition:background 0.15s;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;">
+        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${bg};color:${fg};font-weight:600;">${escHtml(m.category || 'その他')}</span>
+        <span style="font-size:13px;font-weight:600;flex:1;">${escHtml(m.title || '(無題)')}</span>
+        <span style="font-size:11px;color:var(--text-muted);">${dateStr}</span>
+      </div>
+      ${attendees ? `<div style="font-size:11px;color:var(--text-secondary);margin-bottom:4px;">👥 ${escHtml(attendees)}</div>` : ''}
+      ${memoPreview ? `<div style="font-size:11px;color:var(--text-muted);line-height:1.5;">${escHtml(memoPreview)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function openMeetingCreateModal() {
+  editingMeetingId = null;
+  document.getElementById('meetingModalTitle').textContent = '新規会議記録';
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('meetingDateInput').value = today;
+  document.getElementById('meetingCategoryInput').value = '戦略会議';
+  document.getElementById('meetingTitleInput').value = '';
+  document.getElementById('meetingAttendeesInput').value = '';
+  document.getElementById('meetingAgendaInput').value = '';
+  document.getElementById('meetingMemoInput').value = '';
+  document.getElementById('meetingDecisionsInput').value = '';
+  document.getElementById('meetingNextDateInput').value = '';
+  document.getElementById('meetingNextAgendaInput').value = '';
+  document.getElementById('meetingDeleteBtn').style.display = 'none';
+  openModal('meetingModal');
+  setTimeout(() => document.getElementById('meetingTitleInput').focus(), 100);
+}
+
+function openMeetingEditModal(id) {
+  const m = meetings[id];
+  if (!m) return;
+  editingMeetingId = id;
+  document.getElementById('meetingModalTitle').textContent = '会議記録を編集';
+  document.getElementById('meetingDateInput').value = m.date || '';
+  document.getElementById('meetingCategoryInput').value = m.category || 'その他';
+  document.getElementById('meetingTitleInput').value = m.title || '';
+  document.getElementById('meetingAttendeesInput').value = Array.isArray(m.attendees) ? m.attendees.join(', ') : (m.attendees || '');
+  document.getElementById('meetingAgendaInput').value = m.agenda || '';
+  document.getElementById('meetingMemoInput').value = m.memo || '';
+  document.getElementById('meetingDecisionsInput').value = m.decisions || '';
+  document.getElementById('meetingNextDateInput').value = m.next_meeting?.date || '';
+  document.getElementById('meetingNextAgendaInput').value = m.next_meeting?.agenda || '';
+  document.getElementById('meetingDeleteBtn').style.display = '';
+  openModal('meetingModal');
+}
+
+async function saveMeeting() {
+  const date = document.getElementById('meetingDateInput').value;
+  const title = document.getElementById('meetingTitleInput').value.trim();
+  const memo = document.getElementById('meetingMemoInput').value.trim();
+  if (!date || !title || !memo) {
+    toast('日付・タイトル・議事メモは必須です');
+    return;
+  }
+  const attendeesStr = document.getElementById('meetingAttendeesInput').value.trim();
+  const attendees = attendeesStr ? attendeesStr.split(/[,、]\s*/).filter(Boolean) : [];
+  const data = {
+    date,
+    category: document.getElementById('meetingCategoryInput').value,
+    title,
+    attendees,
+    agenda: document.getElementById('meetingAgendaInput').value.trim(),
+    memo,
+    decisions: document.getElementById('meetingDecisionsInput').value.trim(),
+    next_meeting: {
+      date: document.getElementById('meetingNextDateInput').value,
+      agenda: document.getElementById('meetingNextAgendaInput').value.trim(),
+    },
+    updated_at: firebase.database.ServerValue.TIMESTAMP,
+  };
+  try {
+    if (editingMeetingId) {
+      await db.ref(`meetings/${editingMeetingId}`).update(data);
+      toast('会議記録を更新しました');
+    } else {
+      data.created_at = firebase.database.ServerValue.TIMESTAMP;
+      data.created_by = currentUser?.uid || null;
+      await db.ref('meetings').push(data);
+      toast('会議記録を作成しました');
+    }
+    closeModal('meetingModal');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+async function deleteMeeting() {
+  if (!editingMeetingId) return;
+  if (!confirm('この会議記録を削除しますか？')) return;
+  try {
+    await db.ref(`meetings/${editingMeetingId}`).remove();
+    toast('削除しました');
+    closeModal('meetingModal');
+  } catch (e) {
+    toast('エラー: ' + e.message);
+  }
+}
+
+function openMeetingDetail(id) {
+  const m = meetings[id];
+  if (!m) return;
+  viewingMeetingId = id;
+  const bg = MEETING_CATEGORY_COLORS[m.category] || MEETING_CATEGORY_COLORS['その他'];
+  const fg = MEETING_CATEGORY_TEXT[m.category] || MEETING_CATEGORY_TEXT['その他'];
+  const dateStr = m.date ? m.date.replace(/-/g, '/') : '';
+  const attendees = Array.isArray(m.attendees) ? m.attendees.join(', ') : (m.attendees || '');
+  document.getElementById('meetingDetailTitle').textContent = m.title || '会議記録';
+  document.getElementById('meetingDetailBody').innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-size:12px;padding:3px 10px;border-radius:4px;background:${bg};color:${fg};font-weight:600;">${escHtml(m.category || 'その他')}</span>
+      <span style="font-size:12px;color:var(--text-muted);">📅 ${dateStr}</span>
+      ${attendees ? `<span style="font-size:12px;color:var(--text-secondary);">👥 ${escHtml(attendees)}</span>` : ''}
+    </div>
+    ${m.agenda ? `<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">Agenda</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(m.agenda)}</div></div>` : ''}
+    <div style="margin-bottom:12px;">
+      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">議事メモ</div>
+      <div style="font-size:13px;white-space:pre-wrap;line-height:1.7;background:var(--bg-input);padding:12px;border-radius:var(--radius-sm);max-height:50vh;overflow-y:auto;">${escHtml(m.memo || '')}</div>
+    </div>
+    ${m.decisions ? `<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--accent-green);font-weight:600;margin-bottom:4px;">✅ 決定事項</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.6;background:rgba(66,199,96,0.06);padding:10px;border-left:3px solid var(--accent-green);border-radius:4px;">${escHtml(m.decisions)}</div></div>` : ''}
+    ${m.next_meeting && (m.next_meeting.date || m.next_meeting.agenda) ? `
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--accent-blue);font-weight:600;margin-bottom:4px;">🗓 次回会議</div>
+        <div style="font-size:13px;line-height:1.6;background:rgba(90,173,255,0.06);padding:10px;border-left:3px solid var(--accent-blue);border-radius:4px;">
+          ${m.next_meeting.date ? `<div><strong>${escHtml(m.next_meeting.date.replace(/-/g, '/'))}</strong></div>` : ''}
+          ${m.next_meeting.agenda ? `<div style="white-space:pre-wrap;">${escHtml(m.next_meeting.agenda)}</div>` : ''}
+        </div>
+      </div>
+    ` : ''}
+  `;
+  openModal('meetingDetailModal');
+}
+
+function editMeetingFromDetail() {
+  if (!viewingMeetingId) return;
+  closeModal('meetingDetailModal');
+  openMeetingEditModal(viewingMeetingId);
 }
 
 // ============ START ============
