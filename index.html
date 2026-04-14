@@ -2455,7 +2455,7 @@ html, body {
 
 <!-- ===== MEETING CREATE/EDIT MODAL ===== -->
 <div class="modal-overlay" id="meetingModal">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:680px;">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:900px;width:90vw;">
     <div class="modal-header">
       <div class="modal-title" id="meetingModalTitle">新規会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingModal')">&times;</button>
@@ -2519,14 +2519,14 @@ html, body {
 
 <!-- ===== MEETING DETAIL MODAL ===== -->
 <div class="modal-overlay" id="meetingDetailModal">
-  <div class="modal" onclick="event.stopPropagation()" style="max-width:780px;">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:1100px;width:95vw;">
     <div class="modal-header">
       <div class="modal-title" id="meetingDetailTitle">会議記録</div>
       <button class="modal-close" onclick="closeModal('meetingDetailModal')">&times;</button>
     </div>
     <div id="meetingDetailBody"></div>
     <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:8px;">
-      <button class="btn btn-secondary" onclick="editMeetingFromDetail()">編集</button>
+      <button class="btn btn-primary" onclick="editMeetingFromDetail()">✏️ 編集</button>
       <button class="btn btn-secondary" onclick="closeModal('meetingDetailModal')">閉じる</button>
     </div>
   </div>
@@ -6552,34 +6552,35 @@ function openMeetingDetail(id) {
   const attendees = Array.isArray(m.attendees) ? m.attendees.join(', ') : (m.attendees || '');
   document.getElementById('meetingDetailTitle').textContent = m.title || '会議記録';
   document.getElementById('meetingDetailBody').innerHTML = `
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap;">
       <span style="font-size:12px;padding:3px 10px;border-radius:4px;background:${bg};color:${fg};font-weight:600;">${escHtml(m.category || 'その他')}</span>
       <span style="font-size:12px;color:var(--text-muted);">📅 ${dateStr}</span>
       ${attendees ? `<span style="font-size:12px;color:var(--text-secondary);">👥 ${escHtml(attendees)}</span>` : ''}
     </div>
-    ${m.agenda ? `<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">Agenda</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(m.agenda)}</div></div>` : ''}
-    <div style="margin-bottom:12px;">
-      <div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">議事メモ</div>
-      <div style="font-size:13px;white-space:pre-wrap;line-height:1.7;background:var(--bg-input);padding:12px;border-radius:var(--radius-sm);max-height:50vh;overflow-y:auto;">${escHtml(m.memo || '')}</div>
-    </div>
-    ${m.decisions ? `<div style="margin-bottom:12px;"><div style="font-size:11px;color:var(--accent-green);font-weight:600;margin-bottom:4px;">✅ 決定事項</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.6;background:rgba(66,199,96,0.06);padding:10px;border-left:3px solid var(--accent-green);border-radius:4px;">${escHtml(m.decisions)}</div></div>` : ''}
+    ${m.agenda ? `<div style="margin-bottom:14px;"><div style="font-size:11px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">Agenda</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.6;">${escHtml(m.agenda)}</div></div>` : ''}
+    ${m.decisions ? `<div style="margin-bottom:14px;"><div style="font-size:12px;color:var(--accent-green);font-weight:600;margin-bottom:4px;">✅ 決定事項</div><div style="font-size:13px;white-space:pre-wrap;line-height:1.7;background:rgba(66,199,96,0.06);padding:12px;border-left:3px solid var(--accent-green);border-radius:4px;">${escHtml(m.decisions)}</div></div>` : ''}
     ${m.next_meeting && (m.next_meeting.date || m.next_meeting.agenda) ? `
-      <div style="margin-bottom:12px;">
-        <div style="font-size:11px;color:var(--accent-blue);font-weight:600;margin-bottom:4px;">🗓 次回会議</div>
-        <div style="font-size:13px;line-height:1.6;background:rgba(90,173,255,0.06);padding:10px;border-left:3px solid var(--accent-blue);border-radius:4px;">
-          ${m.next_meeting.date ? `<div><strong>${escHtml(m.next_meeting.date.replace(/-/g, '/'))}</strong></div>` : ''}
+      <div style="margin-bottom:14px;">
+        <div style="font-size:12px;color:var(--accent-blue);font-weight:600;margin-bottom:4px;">🗓 次回会議</div>
+        <div style="font-size:13px;line-height:1.7;background:rgba(90,173,255,0.06);padding:12px;border-left:3px solid var(--accent-blue);border-radius:4px;">
+          ${m.next_meeting.date ? `<div style="margin-bottom:4px;"><strong>${escHtml(m.next_meeting.date.replace(/-/g, '/'))}</strong></div>` : ''}
           ${m.next_meeting.agenda ? `<div style="white-space:pre-wrap;">${escHtml(m.next_meeting.agenda)}</div>` : ''}
         </div>
       </div>
     ` : ''}
+    <div>
+      <div style="font-size:12px;color:var(--text-muted);font-weight:600;margin-bottom:4px;">📝 議事メモ</div>
+      <div style="font-size:13px;white-space:pre-wrap;line-height:1.7;background:var(--bg-input);padding:14px;border-radius:var(--radius-sm);max-height:55vh;overflow-y:auto;">${escHtml(m.memo || '')}</div>
+    </div>
   `;
   openModal('meetingDetailModal');
 }
 
 function editMeetingFromDetail() {
   if (!viewingMeetingId) return;
+  const id = viewingMeetingId;  // closeModalでnullになるため事前保存
   closeModal('meetingDetailModal');
-  openMeetingEditModal(viewingMeetingId);
+  openMeetingEditModal(id);
 }
 
 // ============ START ============
