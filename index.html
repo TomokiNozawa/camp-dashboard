@@ -4344,8 +4344,9 @@ async function summarizeTopicComments(force) {
 
 function editTopicFromDetail() {
   if (!viewingTopicId) return;
+  const id = viewingTopicId;  // closeModalでnullになる前に保存
   closeModal('topicDetailModal');
-  openTopicEditModal(viewingTopicId);
+  openTopicEditModal(id);
 }
 
 // ============ DECISIONS / RECORDS ============
@@ -4534,8 +4535,9 @@ function openDecisionDetail(decisionId) {
 
 function editDecisionFromDetail() {
   if (!viewingDecisionId) return;
+  const id = viewingDecisionId;
   closeModal('decisionDetailModal');
-  openDecisionEditModal(viewingDecisionId);
+  openDecisionEditModal(id);
 }
 
 // ============ RECORDS SUB-TABS ============
@@ -5304,8 +5306,9 @@ function openFeedbackDetail(id) {
 
 function editFeedbackFromDetail() {
   if (!viewingFeedbackId) return;
+  const id = viewingFeedbackId;
   closeModal('feedbackDetailModal');
-  openFeedbackEditModal(viewingFeedbackId);
+  openFeedbackEditModal(id);
 }
 
 // ============ BUDGETS ============
