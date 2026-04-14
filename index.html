@@ -3129,6 +3129,13 @@ html, body {
 <!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- Image Lightbox -->
+<div id="lightboxOverlay" onclick="closeLightbox()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;padding:20px;">
+  <img id="lightboxImg" src="" alt="" style="max-width:95vw;max-height:95vh;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+  <div id="lightboxCaption" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:12px;background:rgba(0,0,0,0.6);padding:6px 12px;border-radius:4px;max-width:80vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+  <button onclick="event.stopPropagation();closeLightbox()" style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.3);color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;">×</button>
+</div>
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -3973,14 +3980,14 @@ function renderTopicComments(topicId) {
     const timeStr = c.created_at ? formatDateTime(c.created_at) : '';
     let filesHtml = '';
     if (c.files && c.files.length) {
-      filesHtml = '<div style="margin-top:6px;display:flex;flex-direction:column;gap:4px;">' +
+      filesHtml = '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">' +
         c.files.map(f => {
           const isImg = (f.mimeType || '').startsWith('image/');
           if (isImg) {
-            return `<a href="${escHtml(f.url)}" target="_blank" style="display:inline-block;max-width:200px;"><img src="${escHtml(f.url)}" alt="${escHtml(f.name)}" style="max-width:200px;max-height:150px;border-radius:4px;border:1px solid var(--border);"></a>`;
+            return `<img src="${escHtml(f.url)}" alt="${escHtml(f.name)}" onclick="openLightbox('${escHtml(f.url)}','${escHtml(f.name)}')" style="max-width:360px;max-height:260px;border-radius:6px;border:1px solid var(--border);cursor:zoom-in;display:block;object-fit:contain;background:var(--bg-card);">`;
           }
           const sizeKb = f.size ? Math.round(f.size / 1024) + 'KB' : '';
-          return `<a href="${escHtml(f.url)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent-blue);text-decoration:none;padding:4px 8px;background:var(--bg-card);border-radius:4px;border:1px solid var(--border);width:fit-content;">📎 ${escHtml(f.name)} <span style="color:var(--text-muted);">${sizeKb}</span></a>`;
+          return `<a href="${escHtml(f.url)}" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent-blue);text-decoration:none;padding:4px 8px;background:var(--bg-card);border-radius:4px;border:1px solid var(--border);">📎 ${escHtml(f.name)} <span style="color:var(--text-muted);">${sizeKb}</span></a>`;
         }).join('') + '</div>';
     }
     return `
@@ -4055,10 +4062,17 @@ async function addTopicComment() {
       const commentRefKey = db.ref(`planning_topics/${viewingTopicId}/comments`).push().key;
       for (const file of pendingCommentFiles) {
         const safeName = file.name.replace(/[^\w.\-一-龠ぁ-んァ-ヶー]/g, '_');
-        const storageRef = storage.ref(`comments/${viewingTopicId}/${commentRefKey}/${Date.now()}_${safeName}`);
-        const snap = await storageRef.put(file);
-        const url = await snap.ref.getDownloadURL();
-        filesMeta.push({ name: file.name, url, size: file.size, mimeType: file.type || 'application/octet-stream' });
+        const storagePath = `comments/${viewingTopicId}/${commentRefKey}/${Date.now()}_${safeName}`;
+        try {
+          const storageRef = storage.ref(storagePath);
+          const snap = await storageRef.put(file);
+          const url = await snap.ref.getDownloadURL();
+          filesMeta.push({ name: file.name, url, size: file.size, mimeType: file.type || 'application/octet-stream' });
+        } catch (upErr) {
+          console.error('Storage upload failed:', upErr);
+          toast('ファイルアップロード失敗: ' + (upErr.code || upErr.message) + '\nStorage Rulesを確認してください');
+          return;
+        }
       }
       await db.ref(`planning_topics/${viewingTopicId}/comments/${commentRefKey}`).set({
         text: text || '',
@@ -4076,9 +4090,23 @@ async function addTopicComment() {
     input.value = '';
     clearCommentFiles();
   } catch (e) {
-    toast('エラー: ' + e.message);
+    console.error('Comment submit error:', e);
+    toast('エラー: ' + (e.code || e.message));
   }
 }
+
+function openLightbox(url, name) {
+  document.getElementById('lightboxImg').src = url;
+  document.getElementById('lightboxCaption').textContent = name || '';
+  document.getElementById('lightboxOverlay').style.display = 'flex';
+}
+function closeLightbox() {
+  document.getElementById('lightboxOverlay').style.display = 'none';
+  document.getElementById('lightboxImg').src = '';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('lightboxOverlay')?.style.display === 'flex') closeLightbox();
+});
 
 let autoSummaryTimer = null;
 let autoSummaryInFlight = false;
