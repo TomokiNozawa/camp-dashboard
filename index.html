@@ -3507,6 +3507,11 @@ function listenPlanningTopics() {
     renderTopics();
     renderOverview();
     updateDecisionTopicOptions();
+    // If detail modal is open for a topic, re-render its comments & summary
+    if (viewingTopicId && document.getElementById('topicDetailModal')?.classList.contains('active')) {
+      renderTopicComments(viewingTopicId);
+      scheduleAutoSummary();
+    }
   });
 }
 
@@ -3933,9 +3938,9 @@ function openTopicDetail(topicId) {
     <div class="comment-thread">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
         <div class="comment-thread-title" style="margin:0;flex:1;">コメント</div>
-        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="summarizeTopicComments()" id="topicSummarizeBtn" title="AIでコメント要約">📝 要約</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px;" onclick="summarizeTopicComments(true)" id="topicSummarizeBtn" title="要約を再生成">🔄 再要約</button>
       </div>
-      <div id="topicSummaryBox" style="display:none;margin-bottom:10px;padding:10px 12px;background:rgba(90,173,255,0.08);border-left:3px solid var(--accent-blue);border-radius:4px;font-size:12px;line-height:1.6;"></div>
+      <div id="topicSummaryBox" style="margin-bottom:10px;padding:10px 12px;background:rgba(90,173,255,0.08);border-left:3px solid var(--accent-blue);border-radius:4px;font-size:12px;line-height:1.6;"></div>
       <div class="comment-list" id="topicCommentList"></div>
       <div id="topicCommentFilePreview" style="display:none;margin-top:8px;padding:6px 10px;background:var(--bg-card);border-radius:4px;font-size:11px;"></div>
       <div class="comment-input-row" style="align-items:center;gap:6px;">
@@ -3948,6 +3953,7 @@ function openTopicDetail(topicId) {
 
   renderTopicComments(topicId);
   openModal('topicDetailModal');
+  autoRenderSummary();
 }
 
 function renderTopicComments(topicId) {
@@ -4046,27 +4052,74 @@ async function addTopicComment() {
   }
 }
 
-async function summarizeTopicComments() {
-  if (!viewingTopicId) return;
+let autoSummaryTimer = null;
+let autoSummaryInFlight = false;
+
+function scheduleAutoSummary() {
+  // Debounce: wait 3 seconds after last change before generating
+  if (autoSummaryTimer) clearTimeout(autoSummaryTimer);
+  autoSummaryTimer = setTimeout(() => autoRenderSummary(), 3000);
+}
+
+async function autoRenderSummary() {
+  if (!viewingTopicId || autoSummaryInFlight) return;
   const topic = planningTopics[viewingTopicId];
-  if (!topic || !topic.comments) { toast('コメントがありません'); return; }
+  if (!topic) return;
+  const comments = topic.comments ? Object.entries(topic.comments)
+    .map(([id, c]) => ({ id, ...c }))
+    .sort((a, b) => (a.created_at || 0) - (b.created_at || 0)) : [];
+
+  const box = document.getElementById('topicSummaryBox');
+  if (!box) return;
+
+  if (!comments.length) {
+    box.innerHTML = '<span style="color:var(--text-muted);font-size:11px;">💭 コメントがまだありません</span>';
+    return;
+  }
+  if (comments.length < 2) {
+    const only = comments[0];
+    const a = only.author_id && users[only.author_id] ? users[only.author_id].name : '不明';
+    box.innerHTML = `<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><div style="color:var(--text-muted);font-size:11px;">${escHtml(a)}のコメント1件のみ。要約は2件以上で自動生成されます。</div>`;
+    return;
+  }
+
+  // Check cache: only regenerate if comment count changed
+  const cacheKey = `summary_${viewingTopicId}`;
+  const cached = topic.summary;
+  if (cached && cached.comments_count === comments.length) {
+    box.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><div style="white-space:pre-wrap;">' + escHtml(cached.text || '') + '</div>' +
+      (cached.updated_at ? `<div style="font-size:10px;color:var(--text-muted);margin-top:6px;">${formatDateTime(cached.updated_at)}時点 / コメント${cached.comments_count}件</div>` : '');
+    return;
+  }
+
+  await summarizeTopicComments(false);
+}
+
+async function summarizeTopicComments(force) {
+  if (!viewingTopicId || autoSummaryInFlight) return;
+  const topic = planningTopics[viewingTopicId];
+  if (!topic || !topic.comments) {
+    const box = document.getElementById('topicSummaryBox');
+    if (box) box.innerHTML = '<span style="color:var(--text-muted);font-size:11px;">💭 コメントがまだありません</span>';
+    return;
+  }
   const comments = Object.entries(topic.comments)
     .map(([id, c]) => ({ id, ...c }))
     .sort((a, b) => (a.created_at || 0) - (b.created_at || 0));
-  if (!comments.length) { toast('コメントがありません'); return; }
+  if (!comments.length) return;
 
   const box = document.getElementById('topicSummaryBox');
   const btn = document.getElementById('topicSummarizeBtn');
-  btn.disabled = true;
-  btn.textContent = '要約中...';
-  box.style.display = 'block';
-  box.innerHTML = '<span style="color:var(--text-muted);">🤔 AIで要約を生成中...</span>';
+  autoSummaryInFlight = true;
+  if (btn) { btn.disabled = true; btn.textContent = '要約中...'; }
+  box.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><span style="color:var(--text-muted);font-size:11px;">🤔 AIで要約を生成中...</span>';
 
   try {
     const token = await auth.currentUser.getIdToken();
     const formatted = comments.map(c => {
       const a = c.author_id && users[c.author_id] ? users[c.author_id].name : '不明';
-      return `[${a}] ${c.text || ''}`;
+      const files = c.files && c.files.length ? ` [添付: ${c.files.map(f => f.name).join(', ')}]` : '';
+      return `[${a}] ${c.text || ''}${files}`;
     }).join('\n');
     const resp = await fetch(AUTH_WORKER_URL + '/comment-summary', {
       method: 'POST',
@@ -4075,12 +4128,20 @@ async function summarizeTopicComments() {
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-    box.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><div style="white-space:pre-wrap;">' + escHtml(data.summary || '') + '</div>';
+    const summary = data.summary || '';
+    box.innerHTML = '<div style="font-weight:600;margin-bottom:4px;color:var(--accent-blue);">📝 議論サマリ</div><div style="white-space:pre-wrap;">' + escHtml(summary) + '</div>' +
+      `<div style="font-size:10px;color:var(--text-muted);margin-top:6px;">たった今 / コメント${comments.length}件</div>`;
+    // Cache in Firebase
+    await db.ref(`planning_topics/${viewingTopicId}/summary`).set({
+      text: summary,
+      comments_count: comments.length,
+      updated_at: firebase.database.ServerValue.TIMESTAMP
+    });
   } catch (e) {
     box.innerHTML = '<span style="color:var(--accent-red);">エラー: ' + escHtml(e.message) + '</span>';
   } finally {
-    btn.disabled = false;
-    btn.textContent = '📝 要約';
+    autoSummaryInFlight = false;
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 再要約'; }
   }
 }
 
@@ -5746,6 +5807,10 @@ function closeModal(id) {
   if (id === 'topicModal') {
     editingTopicId = null;
     document.getElementById('topicTitleInput').style.borderColor = '';
+  }
+  if (id === 'topicDetailModal') {
+    viewingTopicId = null;
+    if (autoSummaryTimer) { clearTimeout(autoSummaryTimer); autoSummaryTimer = null; }
   }
   if (id === 'decisionModal') {
     editingDecisionId = null;
